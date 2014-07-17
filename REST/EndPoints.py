@@ -79,16 +79,23 @@ class BaseEndPoint():
 class Variation(BaseEndPoint):
     def __init__(self):
         #Base class initialization
-        BaseEndPoint(self)
+        BaseEndPoint.__init__(self)
+    
+        # register available functions to allow listing name when debugging
+        def regFunc(key, endpoint_params):
+            return lambda **kwargs: self.__genericFunction(key, endpoint_params, **kwargs)
+            
+        for function, params in ENSEMBL_ENDPOINTS["Variation"].iteritems():
+            self.__dict__[function] = regFunc(function, params)
         
-        #Now setting class specific method
-        #re.sub('\:(?P<m>\w+)', lambda m: "%s" %{'species': 'human', 'id':'COSM476'}.get(m.group(1)), ensembl_default_url + test)
     
-    def __genericFunction(self, api_call, **kwargs):
-        #get the endpoint parameters
-        endpoint_param = ENSEMBL_ENDPOINTS["Variation"]
+    def __genericFunction(self, api_call, endpoint_params, **kwargs):
         
-        endpoint = re.sub('\:(?P<m>\w+)', lambda m: "%s" %{'species': 'human', 'id':'COSM476'}.get(m.group(1)), endpoint_param['url'])
-       
-    
-    
+        #TODO: Verify required variables and raise an Exception if needed
+        #TODO: Set __doc__ for generic function        
+        
+        #make endpoint URL
+        endpoint = re.sub('\:(?P<m>\w+)', lambda m: "%s" %(kwargs.get(m.group(1))), endpoint_params['url'])
+        
+        return self.perform_rest_action(endpoint)
+        

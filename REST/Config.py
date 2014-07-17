@@ -29,7 +29,7 @@ ENSEMBL_ENDPOINTS = {
     'Variation' : {
         #Variation endpoints
         'getVariationsFeaturesById': {
-    		'url': 'variation/{{species}}/{{id}}',
+    		'url': 'variation/:species/:id',
     		'method': 'GET',
     		'content_type': 'application/json'
     	},
