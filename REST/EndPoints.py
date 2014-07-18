@@ -8,7 +8,6 @@ Created on Tue Jul 15 15:02:15 2014
 """
 
 import re
-import sys
 import json
 import time
 import types
@@ -16,10 +15,29 @@ import urllib
 import logging
 import urllib2
 
-from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER
+from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_CODES
 
 #Logger instance
 logger = logging.getLogger(__name__)
+
+class RESTException(Exception):
+    "Class for exception raised by REST server"
+
+    def __init__(self, status, server):
+        self.server = server
+        self.status = status
+
+        #checking if this status exists
+        if ENSEMBL_SUPPORTED_CODES.has_key(status):
+            self.name = ENSEMBL_SUPPORTED_CODES[status]["name"]
+            self.notes = ENSEMBL_SUPPORTED_CODES[status]["notes"]
+
+        else:
+            self.name = "Unknown status"
+            self.notes = "Unknown description"
+
+    def __str__(self):
+        return "REST server '%s' returned status %s (%s) : %s" %(self.server, self.status, self.name, self.notes)
 
 class BaseEndPoint():
     """Base class for EnsEMBL REST class"""
@@ -31,6 +49,7 @@ class BaseEndPoint():
         self._request = None
         self._response = None
         self._content = None
+        self._info = None
 
     def perform_rest_action(self, endpoint, hdrs=None, params=None, json_msg=None):
         """Perform REST request with supplied params. Params can be a dictionary
@@ -65,27 +84,45 @@ class BaseEndPoint():
 
             #If data != None urllib2 will use a POST method
             request = urllib2.Request(self.server + endpoint, data=json_msg, headers=hdrs)
-            response = urllib2.urlopen(request)
-            content = response.read()
-            if content:
-                result = json.loads(content)
-            self.req_count += 1
-
-            #Setting request and response values for debugging
             self._request = request
+
+            response = urllib2.urlopen(request)
             self._response = response
+
+            content = response.read()
             self._content = content
 
-        #TODO: Fix that function
+            #Setting request and response values for debugging
+            self._info = response.info()
+
+            #Cheking response
+            if content:
+                if self._info['content-type'] == 'application/json':
+                    result = json.loads(content)
+                else:
+                    result = content
+
+            self.req_count += 1
+
+            #checking if this client has been rate limited
+            if self._info.has_key("x-ratelimit-remaining"):
+                logger.warning("This client has been rate-limited by '%s'" %(self.server))
+                logger.warning("You have %s requests left" %(self._info["x-ratelimit-remaining"]))
+                logger.warning("Counter will be reset in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-remaining"]))))
+
+        #For 200 error codes, the response object is returned immediately, else I will find an exception
         except urllib2.HTTPError, e:
             # check if we are being rate limited by the server
-            if e.code == 429:
-                if 'Retry-After' in e.headers:
-                    retry = e.headers['Retry-After']
-                    time.sleep(float(retry))
-                    self.perform_rest_action(self.server + endpoint, data=json_msg, headers=hdrs)
+            if e.code == 429 and 'Retry-After' in e.headers:
+                retry = e.headers['Retry-After']
+                logger.warning("You've been rate-limited. Waiting %s secs..." %(retry))
+                time.sleep(float(retry))
+                self.perform_rest_action(self.server + endpoint, data=json_msg, headers=hdrs)
+
             else:
-                sys.stderr.write('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                #throw my "useful exception"
+                raise RESTException(status=e.code, server=self.server)
 
         return result
 
@@ -120,7 +157,6 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
 
     def __genericFunction(self, api_call, endpoint_params, **kwargs):
-
         #Verify required variables and raise an Exception if needed
         mandatory_params = re.findall('\:(?P<m>\w+)', endpoint_params['url'])
 
@@ -132,7 +168,11 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
         logger.debug("Checking additional parameters...")
 
+        #Setting json_msg (will have a value only for POST methods)
         json_msg = None
+
+        #Setting default content type for this method
+        headers = {'Content-Type': endpoint_params['default_content_type']}
 
         #the post method has a special parameter
         if endpoint_params['method'] == 'POST':
@@ -156,6 +196,14 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
             del(kwargs[endpoint_params['message_param']])
 
+            #Setting the json Accept content type (json for POST methods is mandatory)
+            headers['Accept'] = "application/json"
+
+            #Checking Content-Type of Response
+            if headers['Content-Type'] != "application/json":
+                logger.error("%s response 'Content-Type' seems to be '%s' . However EnsEMBL will reply in 'application/json'" %(api_call, headers['Content-Type']))
+
+
         #define non mandatory params to perform rest_action. Start
         additional_params = {}
 
@@ -168,9 +216,6 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
         #make endpoint URL
         endpoint = re.sub('\:(?P<m>\w+)', lambda m: "%s" %(kwargs.get(m.group(1))), endpoint_params['url'])
-
-        #Setting default content type for this method
-        headers = {'Content-Type': endpoint_params['default_content_type']}
 
         return self.perform_rest_action(endpoint, hdrs=headers, params=additional_params, json_msg=json_msg)
 

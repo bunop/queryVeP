@@ -23,6 +23,12 @@ ENSEMBL_MIME_TYPES = {
         'extension' : '.json',
         'notes' : """JavaScript compatible generic text based serialisation format. Supported by most programming languages and the recommended consumption format"""
     },
+
+    'xml' : {
+        'content_type' : 'text/xml',
+        'extension' : '.xml',
+        'notes' : '',
+    },
 }
 
 ENSEMBL_ENDPOINTS = {
@@ -83,3 +89,40 @@ ENSEMBL_ENDPOINTS = {
 
 }
 
+ENSEMBL_SUPPORTED_CODES = {
+    200: {
+        'name' : 'OK',
+        'notes' : 'Request was a success. Only process data from the service when you receive this code',
+    },
+
+    400: {
+        'name' : 'Bad Request',
+        'notes' : 'Occurs during exceptional circumstances such as the service is unable to find an ID. Check if the response Content-type or Accept was JSON. If so the JSON object is an exception hash with the message keyed under error',
+    },
+
+    403 : {
+        'name' : 'Forbidden',
+        'notes' : 'You are submitting far too many requests and have been temporarily forbidden access to the service. Wait and retry with a maximum of 15 requests per second.',
+    },
+
+    404 : {
+        'name' : 'Not Found',
+        'notes' : 'Indicates a badly formatted request. Check your URL',
+    },
+
+    408 : {
+        'name' : 'Timeout',
+        'notes' : 'The request was not processed in time. Wait and retry later',
+    },
+
+    429 : {
+        'name' : 'Too Many Requests',
+        'notes' : 'You have been rate-limited; wait and retry. The headers  X-RateLimit-Reset ,  X-RateLimit-Limit  and  X-RateLimit-Remaining  will inform you of how long you have until your limit is reset and what that limit was. If you get this response and have not exceeded your limit then check if you have made too many requests per second.',
+    },
+
+    503 : {
+        'name' : 'Service Unavailable',
+        'notes' : 'The service is temporarily down; retry after a pause',
+    },
+
+}
