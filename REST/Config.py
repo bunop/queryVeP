@@ -26,42 +26,60 @@ ENSEMBL_MIME_TYPES = {
 }
 
 ENSEMBL_ENDPOINTS = {
-    'Variation' : {
-        #Variation endpoints
-        'getVariationsFeaturesById': {
-            'description' : "Uses a variation identifier (e.g. rsID) to return the variation features",
-            'url': 'variation/:species/:id',
-            'method': 'GET',
-            'response_formats' : ['json', 'xml', 'jsonp'],
-            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
-            'required_params' : ['id', 'species'],
-            'optional_params' : ['callback', 'genotypes', 'phenotypes', 'pops']
-
-        },
-
-        #TODO: Adjust this class
-        'getVariantConsequencesById': {
-            'description' : 'Fetch variant consequences based on a variation identifier',
-            'url': 'vep/:species/id/:id',
-            'method': 'GET',
-            'response_formats' : ['json', 'xml', 'jsonp'],
-            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
-        },
-
-        'getVariantConsequencesByMultipleIds' : {
-            'description' : 'Fetch variant consequences for multiple ids',
-            'url': 'vep/:species/id/',
-            'method': 'POST',
-            'response_formats' : ['json', 'xml', 'jsonp'],
-            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
-            'required_params' : ['species'],
-            'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
-            'message_param' : 'ids',
-        },
-
+    #Variation endpoints
+    'getVariationsFeaturesById': {
+        'description' : "Uses a variation identifier (e.g. rsID) to return the variation features",
+        'url': 'variation/:species/:id',
+        'method': 'GET',
+        'response_formats' : ['json', 'xml', 'jsonp'],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ['id', 'species'],
+        'optional_params' : ['callback', 'genotypes', 'phenotypes', 'pops'],
     },
 
-#TODO: Add other ensembl EndPoints
+    'getVariantConsequencesById': {
+        'description' : 'Fetch variant consequences based on a variation identifier',
+        'url': 'vep/:species/id/:id',
+        'method': 'GET',
+        'response_formats' : ['json', 'xml', 'jsonp'],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ['id', 'species'],
+        'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+    },
+
+    'getVariantConsequencesByMultipleIds' : {
+        'description' : 'Fetch variant consequences for multiple ids',
+        'url': 'vep/:species/id/',
+        'method': 'POST',
+        'response_formats' : ['json', 'xml', 'jsonp'],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ['species'],
+        'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+        'message_param' : 'ids',
+    },
+
+    'getVariantConsequences' : {
+        'description' : 'Fetch variant consequences',
+        'url' : 'vep/:species/region/:region/:allele/',
+        'method' : 'GET',
+        'response_formats' : ['json', 'xml', 'jsonp'],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ['allele', 'region', 'species'],
+        'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+    },
+
+    'getVariantConsequencesByMultipleRegions' : {
+        'description' : 'Fetch variant consequences for multiple regions',
+        'url' : 'vep/:species/region/',
+        'method' : 'POST',
+        'response_formats' : ['json', 'xml', 'jsonp'],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ['species'],
+        'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+        'message_param' : 'variants',
+    },
+
+    #TODO: Add other ensembl EndPoints
 
 }
 

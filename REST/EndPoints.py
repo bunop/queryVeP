@@ -28,6 +28,9 @@ class BaseEndPoint():
         self.reqs_per_sec = reqs_per_sec
         self.req_count = 0
         self.last_req = 0
+        self._request = None
+        self._response = None
+        self._content = None
 
     def perform_rest_action(self, endpoint, hdrs=None, params=None, json_msg=None):
         """Perform REST request with supplied params. Params can be a dictionary
@@ -57,6 +60,9 @@ class BaseEndPoint():
             self.req_count = 0
 
         try:
+            #debug
+            logger.debug("Performing request to '%s' json_data='%s'" %(self.server+endpoint, json_msg))
+
             #If data != None urllib2 will use a POST method
             request = urllib2.Request(self.server + endpoint, data=json_msg, headers=hdrs)
             response = urllib2.urlopen(request)
@@ -64,6 +70,11 @@ class BaseEndPoint():
             if content:
                 result = json.loads(content)
             self.req_count += 1
+
+            #Setting request and response values for debugging
+            self._request = request
+            self._response = response
+            self._content = content
 
         #TODO: Fix that function
         except urllib2.HTTPError, e:
@@ -89,8 +100,10 @@ class BaseEndPoint():
         else:
             logger.critical("EnsEMBL REST server is DOWN")
 
-class Variation(BaseEndPoint):
+class EnsEMBLEndPoint(BaseEndPoint):
     def __init__(self):
+        """The main class for all EnsEMBL REST endpoints"""
+
         #Base class initialization
         BaseEndPoint.__init__(self)
 
@@ -98,7 +111,7 @@ class Variation(BaseEndPoint):
         def regFunc(key, endpoint_params):
             return lambda **kwargs: self.__genericFunction(key, endpoint_params, **kwargs)
 
-        for function, params in ENSEMBL_ENDPOINTS["Variation"].iteritems():
+        for function, params in ENSEMBL_ENDPOINTS.iteritems():
             self.__dict__[function] = regFunc(function, params)
 
             #Set __doc__ for generic function
@@ -150,7 +163,7 @@ class Variation(BaseEndPoint):
             if param in endpoint_params['optional_params']:
                 additional_params[param] = value
 
-            else:
+            elif param not in mandatory_params:
                 logger.warn("Ignoring %s = %s" %(param, value))
 
         #make endpoint URL
@@ -158,8 +171,6 @@ class Variation(BaseEndPoint):
 
         #Setting default content type for this method
         headers = {'Content-Type': endpoint_params['default_content_type']}
-
-        logger.debug("Performing request to '%s' endpoint" %(self.server+endpoint))
 
         return self.perform_rest_action(endpoint, hdrs=headers, params=additional_params, json_msg=json_msg)
 

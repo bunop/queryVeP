@@ -18,6 +18,6 @@ import Config
 import EndPoints
 
 __author__ = "Paolo Cozzi"
-__version__ = "0.1a"
+__version__ = "0.2a"
 __all__ = ["Config", "EndPoints"]
 
