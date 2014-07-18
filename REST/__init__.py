@@ -13,3 +13,11 @@ The aim of this project is to merge those methodologies and to definie a library
 deal with ensembl REST api.
 
 """
+
+import Config
+import EndPoints
+
+__author__ = "Paolo Cozzi"
+__version__ = "0.1a"
+__all__ = ["Config", "EndPoints"]
+

@@ -15,9 +15,9 @@ ENSEMBL_MIME_TYPES = {
         'extension' : '.fasta',
         'notes' : """Sequence serialisation format. Only supported on the /sequence endpoint"""
     },
-    
+
     #TODO: Add other mime types (https://github.com/Ensembl/ensembl-rest/wiki/Output-formats)
-    
+
     'json' : {
         'content_type' : 'application/json',
         'extension' : '.json',
@@ -29,21 +29,39 @@ ENSEMBL_ENDPOINTS = {
     'Variation' : {
         #Variation endpoints
         'getVariationsFeaturesById': {
-    		'url': 'variation/:species/:id',
-    		'method': 'GET',
-    		'content_type': 'application/json'
-    	},
-        
+            'description' : "Uses a variation identifier (e.g. rsID) to return the variation features",
+            'url': 'variation/:species/:id',
+            'method': 'GET',
+            'response_formats' : ['json', 'xml', 'jsonp'],
+            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+            'required_params' : ['id', 'species'],
+            'optional_params' : ['callback', 'genotypes', 'phenotypes', 'pops']
+
+        },
+
+        #TODO: Adjust this class
         'getVariantConsequencesById': {
+            'description' : 'Fetch variant consequences based on a variation identifier',
             'url': 'vep/:species/id/:id',
             'method': 'GET',
-            'response_formats' : ['json', 'xml', 'jsonp'], 
-            'default_content_type' : ENSEMBL_MIME_TYPES['json']
+            'response_formats' : ['json', 'xml', 'jsonp'],
+            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
         },
-        
+
+        'getVariantConsequencesByMultipleIds' : {
+            'description' : 'Fetch variant consequences for multiple ids',
+            'url': 'vep/:species/id/',
+            'method': 'POST',
+            'response_formats' : ['json', 'xml', 'jsonp'],
+            'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+            'required_params' : ['species'],
+            'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+            'message_param' : 'ids',
+        },
+
     },
-    
-    #TODO: Add other ensembl EndPoints
-    
+
+#TODO: Add other ensembl EndPoints
+
 }
 
