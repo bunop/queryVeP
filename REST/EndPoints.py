@@ -17,9 +17,6 @@ import urllib2
 
 from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_CODES
 
-#Logger instance
-logger = logging.getLogger(__name__)
-
 class RESTException(Exception):
     "Class for exception raised by REST server"
 
@@ -61,7 +58,7 @@ class BaseEndPoint():
         if 'Content-Type' not in hdrs:
             hdrs['Content-Type'] = 'application/json'
 
-        logger.debug("Request %s Content-Type" %(hdrs['Content-Type']))
+        logging.debug("Request %s Content-Type" %(hdrs['Content-Type']))
 
         #Add additional params to endpoint
         if params:
@@ -80,7 +77,7 @@ class BaseEndPoint():
 
         try:
             #debug
-            logger.debug("Performing request to '%s' json_data='%s'" %(self.server+endpoint, json_msg))
+            logging.info("Performing request to '%s' json_data='%s'" %(self.server+endpoint, json_msg))
 
             #If data != None urllib2 will use a POST method
             request = urllib2.Request(self.server + endpoint, data=json_msg, headers=hdrs)
@@ -106,21 +103,21 @@ class BaseEndPoint():
 
             #checking if this client has been rate limited
             if self._info.has_key("x-ratelimit-remaining"):
-                logger.warning("This client has been rate-limited by '%s'" %(self.server))
-                logger.warning("You have %s requests left" %(self._info["x-ratelimit-remaining"]))
-                logger.warning("Counter will be reset in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-remaining"]))))
+                logging.warning("This client has been rate-limited by '%s'" %(self.server))
+                logging.warning("You have %s requests left" %(self._info["x-ratelimit-remaining"]))
+                logging.warning("Counter will be reset in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-reset"]))))
 
         #For 200 error codes, the response object is returned immediately, else I will find an exception
         except urllib2.HTTPError, e:
             # check if we are being rate limited by the server
             if e.code == 429 and 'Retry-After' in e.headers:
                 retry = e.headers['Retry-After']
-                logger.warning("You've been rate-limited. Waiting %s secs..." %(retry))
+                logging.warning("You've been rate-limited. Waiting %s secs..." %(retry))
                 time.sleep(float(retry))
                 self.perform_rest_action(self.server + endpoint, data=json_msg, headers=hdrs)
 
             else:
-                logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                logging.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
                 #throw my "useful exception"
                 raise RESTException(status=e.code, server=self.server)
 
@@ -129,13 +126,13 @@ class BaseEndPoint():
     def ping(self, endpoint='/info/ping'):
         """Testing if server is UP"""
 
-        logger.debug("Testing if EnsEMBL server is active")
+        logging.debug("Testing if EnsEMBL server is active")
 
         if self.perform_rest_action(endpoint) == {u'ping': 1}:
-            logger.info("EnsEMBL REST server is UP")
+            logging.info("EnsEMBL REST server is UP")
 
         else:
-            logger.critical("EnsEMBL REST server is DOWN")
+            logging.critical("EnsEMBL REST server is DOWN")
 
 class EnsEMBLEndPoint(BaseEndPoint):
     def __init__(self):
@@ -160,13 +157,13 @@ class EnsEMBLEndPoint(BaseEndPoint):
         #Verify required variables and raise an Exception if needed
         mandatory_params = re.findall('\:(?P<m>\w+)', endpoint_params['url'])
 
-        logger.debug("Verifing mandatory parameters...")
+        logging.debug("Verifing mandatory parameters...")
 
         for param in mandatory_params:
             if not kwargs.has_key(param):
                 raise Exception, "%s requires %s as mandatory params" %(api_call, mandatory_params)
 
-        logger.debug("Checking additional parameters...")
+        logging.debug("Checking additional parameters...")
 
         #Setting json_msg (will have a value only for POST methods)
         json_msg = None
@@ -176,10 +173,10 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
         #the post method has a special parameter
         if endpoint_params['method'] == 'POST':
-            logger.debug("Cheking POST message")
+            logging.debug("Cheking POST message")
 
             if not kwargs.has_key(endpoint_params['message_param']):
-                logger.critical("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
+                logging.critical("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
                 raise Exception, "Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param'])
 
             #in endpoint_params['message_param'] there's the key in which input data are
@@ -191,7 +188,7 @@ class EnsEMBLEndPoint(BaseEndPoint):
                     json_msg = json.dumps(json_msg)
 
                 except Exception, message:
-                    logger.critical("%s %s parameter has to be a json string or an object to be converted in json string" %(api_call, endpoint_params['message_param']))
+                    logging.critical("%s %s parameter has to be a json string or an object to be converted in json string" %(api_call, endpoint_params['message_param']))
                     raise Exception, message
 
             del(kwargs[endpoint_params['message_param']])
@@ -201,7 +198,7 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
             #Checking Content-Type of Response
             if headers['Content-Type'] != "application/json":
-                logger.error("%s response 'Content-Type' seems to be '%s' . However EnsEMBL will reply in 'application/json'" %(api_call, headers['Content-Type']))
+                logging.error("%s response 'Content-Type' seems to be '%s' . However EnsEMBL will reply in 'application/json'" %(api_call, headers['Content-Type']))
 
 
         #define non mandatory params to perform rest_action. Start
@@ -212,7 +209,7 @@ class EnsEMBLEndPoint(BaseEndPoint):
                 additional_params[param] = value
 
             elif param not in mandatory_params:
-                logger.warn("Ignoring %s = %s" %(param, value))
+                logging.warn("Ignoring %s = %s" %(param, value))
 
         #make endpoint URL
         endpoint = re.sub('\:(?P<m>\w+)', lambda m: "%s" %(kwargs.get(m.group(1))), endpoint_params['url'])

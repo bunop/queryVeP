@@ -7,6 +7,8 @@ Created on Tue Jul 15 16:48:15 2014
 
 """
 
+import logging
+
 ENSEMBL_REST_SERVER = 'http://rest.ensembl.org/'
 
 ENSEMBL_MIME_TYPES = {
@@ -126,3 +128,6 @@ ENSEMBL_SUPPORTED_CODES = {
     },
 
 }
+
+#Logging istance
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
