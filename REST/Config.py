@@ -18,6 +18,12 @@ ENSEMBL_MIME_TYPES = {
         'notes' : """Sequence serialisation format. Only supported on the /sequence endpoint"""
     },
 
+    'gff3' : {
+        'content_type' : 'text/x-gff3',
+        'extension' : '.gff3',
+        'notes' : """Genomic feature serialisation format. Only supported on the /feature endpoint."""
+    },
+
     #TODO: Add other mime types (https://github.com/Ensembl/ensembl-rest/wiki/Output-formats)
 
     'json' : {
@@ -26,14 +32,53 @@ ENSEMBL_MIME_TYPES = {
         'notes' : """JavaScript compatible generic text based serialisation format. Supported by most programming languages and the recommended consumption format"""
     },
 
+    'jsonp' : {
+        'content_type' : 'text/javascript',
+        'extension' : '.jsonp',
+        'notes' : """Extension of JSON to avoid issues of web browser same origin policy. Commonly used by JavaScript plugins like jQuery."""
+    },
+
+    'text' : {
+        'content_type' : 'text',
+        'extension' : '.html',
+        'notes' : "No description in Ensembl REST documentation (https://github.com/Ensembl/ensembl-rest/wiki/Output-formats)"
+    },
+
     'xml' : {
         'content_type' : 'text/xml',
         'extension' : '.xml',
         'notes' : '',
     },
+
+    'yaml' : {
+        'content_type' : 'text/x-yaml',
+        'extension' : '.yaml',
+        'notes' : '',
+    },
 }
 
 ENSEMBL_ENDPOINTS = {
+    #Sequences EndPoints
+    'getSequenceByID': {
+        'description' : "Request multiple types of sequence by stable identifier.",
+        'url' : "sequence/id/:id",
+        'method' : "GET",
+        'response_formats' : ["fasta", "json", "jsonp", "text", "yaml"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['fasta']['content_type'],
+        'required_params' : ['id'],
+        'optional_params' : ['db_type', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature', 'multiple_sequences', 'object_type', 'species', 'type'],
+    },
+
+    'getSequenceByRegion' : {
+        'description' : "Returns the genomic sequence of the specified region of the given species.",
+        'url' : "sequence/region/:species/:region",
+        'method' : "GET",
+        'response_formats' : ["fasta", "json", "jsonp", "text", "yaml"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['fasta']['content_type'],
+        'required_params' : ['region', 'species'],
+        'optional_params' : ['coord_system', 'coord_system_version', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature'],
+    },
+
     #Variation endpoints
     'getVariationsFeaturesById': {
         'description' : "Uses a variation identifier (e.g. rsID) to return the variation features",

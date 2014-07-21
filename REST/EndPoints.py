@@ -38,6 +38,7 @@ class RESTException(Exception):
 
 class BaseEndPoint():
     """Base class for EnsEMBL REST class"""
+
     def __init__(self, server=ENSEMBL_REST_SERVER, reqs_per_sec=15):
         self.server = server
         self.reqs_per_sec = reqs_per_sec
@@ -58,7 +59,7 @@ class BaseEndPoint():
         if 'Content-Type' not in hdrs:
             hdrs['Content-Type'] = 'application/json'
 
-        logging.debug("Request %s Content-Type" %(hdrs['Content-Type']))
+        logging.debug("Request Content-Type is '%s'" %(hdrs['Content-Type']))
 
         #Add additional params to endpoint
         if params:
@@ -93,19 +94,21 @@ class BaseEndPoint():
             self._info = response.info()
 
             #Cheking response
+            #TODO: return content type defined by the user, do not parse results at this point
             if content:
                 if self._info['content-type'] == 'application/json':
                     result = json.loads(content)
                 else:
                     result = content
 
+            #Increasing request counter by one
             self.req_count += 1
 
             #checking if this client has been rate limited
             if self._info.has_key("x-ratelimit-remaining"):
                 logging.warning("This client has been rate-limited by '%s'" %(self.server))
                 logging.warning("You have %s requests left" %(self._info["x-ratelimit-remaining"]))
-                logging.warning("Counter will be reset in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-reset"]))))
+                logging.warning("Counter will be resetted in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-reset"]))))
 
         #For 200 error codes, the response object is returned immediately, else I will find an exception
         except urllib2.HTTPError, e:
@@ -124,15 +127,17 @@ class BaseEndPoint():
         return result
 
     def ping(self, endpoint='/info/ping'):
-        """Testing if server is UP"""
+        """Return True if server is UP"""
 
         logging.debug("Testing if EnsEMBL server is active")
 
         if self.perform_rest_action(endpoint) == {u'ping': 1}:
             logging.info("EnsEMBL REST server is UP")
+            return True
 
         else:
             logging.critical("EnsEMBL REST server is DOWN")
+            return False
 
 class EnsEMBLEndPoint(BaseEndPoint):
     def __init__(self):
@@ -150,7 +155,9 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
             #Set __doc__ for generic function
             if params.has_key("description"):
+                #Add a docstring to lambda function to get help on that function
                 self.__dict__[function].__doc__ = params["description"]
+                self.__dict__[function].__name__ = function
 
 
     def __genericFunction(self, api_call, endpoint_params, **kwargs):
@@ -158,6 +165,8 @@ class EnsEMBLEndPoint(BaseEndPoint):
         mandatory_params = re.findall('\:(?P<m>\w+)', endpoint_params['url'])
 
         logging.debug("Verifing mandatory parameters...")
+
+        #TODO: check those mandatory parameters againts config file
 
         for param in mandatory_params:
             if not kwargs.has_key(param):
@@ -168,12 +177,14 @@ class EnsEMBLEndPoint(BaseEndPoint):
         #Setting json_msg (will have a value only for POST methods)
         json_msg = None
 
+        #TODO: Setting user defined content type or the default content type
+
         #Setting default content type for this method
         headers = {'Content-Type': endpoint_params['default_content_type']}
 
         #the post method has a special parameter
         if endpoint_params['method'] == 'POST':
-            logging.debug("Cheking POST message")
+            logging.debug("Cheking POST message...")
 
             if not kwargs.has_key(endpoint_params['message_param']):
                 logging.critical("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
