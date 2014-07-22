@@ -58,8 +58,19 @@ ENSEMBL_MIME_TYPES = {
 }
 
 ENSEMBL_ENDPOINTS = {
+    #Information Endpoints
+    'getAllAvailableSpecies' : {
+        'description' : "Lists all available species, their aliases, available adaptor groups and data release.",
+        'url' : "info/species",
+        'method' : "GET",
+        'response_formats' : ["json", "xml", "jsonp"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : [],
+        'optional_params' : [],
+    },
+
     #Sequences EndPoints
-    'getSequenceByID': {
+    'getSequenceByID' : {
         'description' : "Request multiple types of sequence by stable identifier.",
         'url' : "sequence/id/:id",
         'method' : "GET",

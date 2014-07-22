@@ -14,6 +14,8 @@ import types
 import urllib
 import logging
 import urllib2
+import StringIO
+import Bio.SeqIO
 
 from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_CODES
 
@@ -98,6 +100,11 @@ class BaseEndPoint():
             if content:
                 if self._info['content-type'] == 'application/json':
                     result = json.loads(content)
+
+                elif self._info['content-type'] == "text/x-fasta":
+                    handle = StringIO.StringIO(content)
+                    result = Bio.SeqIO.read(handle, "fasta")
+
                 else:
                     result = content
 
