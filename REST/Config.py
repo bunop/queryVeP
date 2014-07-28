@@ -7,8 +7,6 @@ Created on Tue Jul 15 16:48:15 2014
 
 """
 
-import logging
-
 ENSEMBL_REST_SERVER = 'http://rest.ensembl.org/'
 
 ENSEMBL_MIME_TYPES = {
@@ -123,7 +121,7 @@ ENSEMBL_ENDPOINTS = {
     },
 
     'getVariantConsequences' : {
-        'description' : 'Fetch variant consequences',
+        'description' : 'Fetch variant consequences (for a single region)',
         'url' : 'vep/:species/region/:region/:allele/',
         'method' : 'GET',
         'response_formats' : ['json', 'xml', 'jsonp'],
@@ -186,4 +184,4 @@ ENSEMBL_SUPPORTED_CODES = {
 }
 
 #Logging istance
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+#logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
