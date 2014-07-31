@@ -1,0 +1,35 @@
+## -*- coding: utf-8 -*-
+## base.html
+## base-most template, renders layout etc.
+<html>
+
+    <head>
+        ## Encoding for html
+        <meta charset="UTF-8">
+
+        ## traverse through all namespaces present,
+        ## look for a %def named 'include_css'
+        ## All the code after '%' is pure python code. Include_css is to import css
+        % for ns in context.namespaces.values():
+            % if hasattr(ns, 'include_css'):
+                ${ns.include_css()}
+            % endif
+        % endfor
+    </head>
+
+    <body>
+
+        <div class="header">
+            <%block name="header"/>
+        </div>
+
+        ${self.body()}
+        ## ${next.body(**context.kwargs)}
+
+        <div class="footer">
+            <%block name="footer"/>
+        </div>
+
+    </body>
+
+</html>

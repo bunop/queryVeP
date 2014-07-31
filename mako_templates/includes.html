@@ -1,0 +1,26 @@
+## -*- coding: utf-8 -*-
+## includes.html
+## library functions
+## see mako documentation for namespecie: http://docs.makotemplates.org/en/latest/namespaces.html
+
+<%def name="include_css()">
+    <link href="http://bioinformatics.tecnoparco.org/SNPchimp/snpchimp/clone_files/standard.css" media="screen" rel="stylesheet" type="text/css"/>
+    <link href="http://bioinformatics.tecnoparco.org/SNPchimp/snpchimp/clone_files/tables.css" media="screen" rel="stylesheet" type="text/css"/>
+</%def>
+
+## Useful (?) functions
+<%def name="makerow(row)">
+    <tr>
+    % for name in row:
+        <td>${unicode(name)}</td>\
+    % endfor
+    </tr>
+</%def>
+
+<%def name="makeheader(header)">
+    <tr>
+    % for name in header:
+        <th>${unicode(name)}</th>\
+    % endfor
+    </tr>
+</%def>
