@@ -1,5 +1,10 @@
 ## -*- coding: utf-8 -*-
 ## base.html
+##
+## Created on Thu Jul 31 12:17:33 2014
+##
+## @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+##
 ## base-most template, renders layout etc.
 <html>
 
@@ -23,8 +28,8 @@
             <%block name="header"/>
         </div>
 
-        ${self.body()}
-        ## ${next.body(**context.kwargs)}
+        ## ${self.body()}
+        ${next.body(**context.kwargs)}
 
         <div class="footer">
             <%block name="footer"/>
