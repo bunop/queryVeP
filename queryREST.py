@@ -42,6 +42,9 @@ logger = logging.getLogger("queryREST-CGI")
 
 #A function to interpret strand correctly
 def getStrand(strand):
+    #UPDATE: the strand is always positive
+    raise Exception, "the strand of snpchimp input data is always positive"
+
     if strand == "reverse":
         return "-"
     else:
@@ -68,7 +71,7 @@ fileitem = form['filename']
 specie = form['specie']
 debug = bool(form['debug'].value)
 
-# Recupero i mako templates
+# mako template for CGI-HTML rendering
 mylookup = mako.lookup.TemplateLookup(directories=["./mako_templates/"], module_directory='/tmp/mako_modules', output_encoding='utf-8', encoding_errors='replace', collection_size=500)
 mytemplate = mylookup.get_template("index.html")
 
@@ -106,7 +109,7 @@ if fileitem.filename:
     affy_idx = header.index("Alleles_A_B_Affymetrix")
 
     #The orientation column is the strand column in ensembl
-    #TODO: lo strand è sempre +
+    #UPDATE: the strand is always positive
     strand_idx = header.index("orient")
 
     #There are some record that are duplicated. They are the same SNPs derived from
@@ -142,10 +145,18 @@ if fileitem.filename:
             raise Exception, "affy_allele (%s) and illu_allel (%s) are BOTH defined for %s" (affy_allele, illu_allele, line)
 
         #The strand codified as ensembl
-        #TODO: lo strand è sempre +
-        strand = getStrand(line[strand_idx])
+        #UPDATE: the strand is always positive
+        #strand = getStrand(line[strand_idx])
+        strand = "+"
 
-        row = [chrom, pos, pos, allele, strand, ID]
+        #this row is in ensembl default VEP input format
+        #row = [chrom, pos, pos, allele, strand, ID]
+
+        #because allele in SNPchimp doesn't like as VEP input, I will threat them like
+        #multiple VCF variant allele. VCF input string is 'CHROM POS ID REF ALT QUAL FILTER INFO'
+        row = [chrom, pos, ID, "N", allele, ".", ".", "."]
+
+        #This code is to ensure that every SNP will be query one time
         key = tuple(row)
 
         #if I have already defined this row, I take note but I will continue to another row
@@ -162,8 +173,10 @@ if fileitem.filename:
         logger.debug("default_line: %s" %(default_line))
 
         #Write this line in output file
+        #UPDATE: try to delete tmp file and use StringIO object
         csvout.writerow(row)
 
+        #take count how many snps I want to query
         counter += 1
 
         #debug

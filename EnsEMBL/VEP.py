@@ -120,6 +120,9 @@ class Variant(ColocatedVariant):
         self.most_severe_consequence = None
         self.seq_region_name = None
 
+        #If you return a VEP record, define here the headers of that row
+        self.header = ['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature', 'Feature_type', 'Consequence', 'cDNA_position', 'CDS_position', 'Protein_position', 'Amino_acids', 'Codons', 'Existing_variation', 'Extra']
+
         #Instantiate the class-base attributes
         ColocatedVariant.__init__(self)
 
@@ -225,7 +228,7 @@ class QueryVEP():
             self.Open(inputfile)
 
     def Open(self, inputfile):
-        """Open a file for REST requests"""
+        """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
 
         #Handle case
         if type(inputfile) == types.FileType:
