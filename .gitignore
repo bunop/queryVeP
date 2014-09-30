@@ -52,3 +52,5 @@ docs/_build/
 # Spyder project
 .spyderproject
 
+#Pyenv local options
+.python-version
