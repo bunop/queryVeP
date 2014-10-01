@@ -22,9 +22,6 @@ from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_COD
 # Logger instance
 logger = logging.getLogger(__name__)
 
-# Setting the default logging level of this module
-logger.setLevel(logging.WARN)
-
 class RESTException(Exception):
     "Class for exception raised by REST server"
 

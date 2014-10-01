@@ -8,8 +8,12 @@ A series of function to deal with snpchim database
 
 """
 
+import logging
 import MySQLdb
 import ConfigParser
+
+# Logger instance
+logger = logging.getLogger(__name__)
 
 class configException(Exception): pass
 
@@ -18,6 +22,8 @@ class Config(ConfigParser.ConfigParser):
     def __init__(self, configfile="/var/www/.snpchimp2_conf.ini"):        
         #Read the global ini file with database credentials
         ConfigParser.ConfigParser.__init__(self)
+        
+        logger.debug("reading configfile %s" %(configfile))
         self.read(configfile)
         
     #some methods to get useful data from Config file
@@ -64,10 +70,13 @@ class SNPchiMp2():
         for k,v in kwargs.iteritems():
             if k not in self.__parameters:
                 raise snpchimpDBException, "'%s' is not a valid parameters. Valid parameters are %s" %(k, self.__parameters)
+            
+            logger.info("Setting 'self.%s' to '%s' " %(k,v))
             setattr(self, k, v)
             
         #get a (new) mysqldb connection
         if self.__connection == None or len(kwargs) > 0:
+            logger.debug("Connecting to database '%s' on host '%s'" %(self.db, self.host))
             self.__connection = MySQLdb.connect(host=self.host, passwd=self.passwd, user=self.user, db=self.db)
             
         #return a connection to database
@@ -88,7 +97,8 @@ class SNPchiMp2():
         if assembly not in assemblies.keys():
             raise snpchimpDBException, "Assembly '%s' isn't in '%s' database. Assemblies are %s" %(assembly, self.db, assemblies.keys())
         
-        #TODO: check correctness of vep_input_data      
+        #TODO: check correctness of vep_input_data
+        logger.info("%s variants received in input" %(len(vep_input_data)))
         
         #derive the correct table
         prefix = self.allowed_animals[animal]
@@ -114,6 +124,9 @@ class SNPchiMp2():
         #Query the database
         conn = self.getConnection()
         curs = conn.cursor()
+        
+        #debug
+        logger.debug("Querying '%s' using '%s'" %(table, conn))
 
         #Now process each line of VEP input
         header = None
@@ -121,6 +134,7 @@ class SNPchiMp2():
         
         #Cicling along vep_input_data
         for vep_input in vep_input_data:
+            logger.debug("search for %s" %(vep_input.__str__()))
             n_of_rows = curs.execute(sql, vep_input)
             
             if n_of_rows == 0:
@@ -135,6 +149,9 @@ class SNPchiMp2():
             
             #Add this results to global results
             data += list(results)
+
+        #debug
+        logger.info("Got %s variants from %s" %(len(data), table))
 
         #Adding header        
         data.insert(0, header)

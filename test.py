@@ -12,6 +12,8 @@ Testing snpchimp downloadSNP.php script, to see which parameter are defined by P
 import cgi
 import sys
 import cgitb
+import getpass
+import logging
 
 from Utils.helper import parseVePinput,getUniqueList
 from Utils.snpchimpDB import SNPchiMp2
@@ -33,8 +35,12 @@ print("Content-type: text/html\n")
 #debug
 #cgi.test()
 
+#Logging istance
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+logger = logging.getLogger("SNPchiMpVep")
+
 # mako template for CGI-HTML rendering
-mylookup = mako.lookup.TemplateLookup(directories=["./mako_templates/"], module_directory='/tmp/mako_modules', output_encoding='utf-8', encoding_errors='replace', collection_size=500)
+mylookup = mako.lookup.TemplateLookup(directories=["./mako_templates/"], module_directory='/tmp/%s-mako_modules' %(getpass.getuser()), output_encoding='utf-8', encoding_errors='replace', collection_size=500)
 mytemplate = mylookup.get_template("index.html")
 
 #reading calling parameters

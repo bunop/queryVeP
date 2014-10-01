@@ -15,9 +15,6 @@ import logging
 # Logger instance
 logger = logging.getLogger(__name__)
 
-# Setting the default logging level of this module
-logger.setLevel(logging.WARN)
-
 class ColocatedVariant():
     """A class to deal with variant and colocated variant"""
 
