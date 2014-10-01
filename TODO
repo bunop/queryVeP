@@ -1,0 +1,9 @@
+
+*) Tables "%_join_%" are not correctly indicized for doing queries relying
+   on coordinates or SNP_name
+   
+    - Selecting for a position or a SNP name require a full table scan for
+      each query
+      
+    - Queries in SNPchimp browse page require a full table scan
+    

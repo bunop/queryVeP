@@ -46,15 +46,16 @@ assembly = cgi.escape(form.getvalue("assembly", None))
 vep_input_string = cgi.escape(form.getvalue("vep_input_string", None))
 vep_input_data = getUniqueList(parseVePinput(vep_input_string))
 
-print mytemplate.render(header=["animal", "assembly", "vep_input_data"], rows=[[animal, assembly, vep_input_data]])
+#debug
+#print mytemplate.render(header=["animal", "assembly", "vep_input_data"], rows=[[animal, assembly, vep_input_data]])
 
 #Try to fetch alleles in database
-#snpChimp = SNPchiMp2()
-#snpChimp.getConnection()
-#results = snpChimp.getVariants(animal, assembly, vep_input_data)
-#
-##catch header
-#header = results.pop(0)
-#
-#print mytemplate.render(header=header, rows=results)
-#
+snpChimp = SNPchiMp2()
+snpChimp.getConnection()
+results = snpChimp.getVariants(animal, assembly, vep_input_data)
+
+#catch header
+header = results.pop(0)
+
+print mytemplate.render(header=header, rows=results)
+

@@ -30,7 +30,7 @@ class Config(ConfigParser.ConfigParser):
         """Return a dictionary of allowed assemblies giving an animal"""
             
         if animal not in self.getAllowedAnimals().keys():
-            raise configException, "I couldn't find %s_assemblies in config file" %(animal)
+            raise configException, "I couldn't find '%s_assemblies' in config file" %(animal)
             
         return dict((k,v) for k,v in self.items("%s_assemblies" %(animal)))
 
@@ -63,7 +63,7 @@ class SNPchiMp2():
         #override the default parameters, if specified
         for k,v in kwargs.iteritems():
             if k not in self.__parameters:
-                raise snpchimpDBException, "%s is not a valid parameters. Valid parameters are %s" %(k, self.__parameters)
+                raise snpchimpDBException, "'%s' is not a valid parameters. Valid parameters are %s" %(k, self.__parameters)
             setattr(self, k, v)
             
         #get a (new) mysqldb connection
@@ -73,6 +73,77 @@ class SNPchiMp2():
         #return a connection to database
         return self.__connection
         
-    
+    def getVariants(self, animal, assembly, vep_input_data):
+        """Query SNPchiMp2 database, using animal and assembly to identify the
+        correct table. vep_input_data must derive from downloadSNP.php call from
+        snpchimp, ad parsed by the parseVePinput of the helper script"""
+        
+        #check if animal is allowed
+        if animal not in self.allowed_animals.keys():
+            raise snpchimpDBException, "Animal %s isn't in %s database" %(animal, self.db)
+            
+        #Check assembly if exists
+        assemblies = self.config.getAssembliesByAnimal(animal)
+        
+        if assembly not in assemblies.keys():
+            raise snpchimpDBException, "Assembly '%s' isn't in '%s' database. Assemblies are %s" %(assembly, self.db, assemblies.keys())
+        
+        #TODO: check correctness of vep_input_data      
+        
+        #derive the correct table
+        prefix = self.allowed_animals[animal]
+        suffix = assemblies[assembly]
+        table = "%s_join_%s" %(prefix, suffix)
+        
+        #no "." are in table. Correct table name
+        table = table.replace(".","_")
+        
+        #now constructiong the SQL query
+        sql = """
+             SELECT DISTINCT `chromosome`,     
+                    `position`, 
+                    `SNP_name`,
+                    `Alleles_A_B_FORWARD`,
+                    `Alleles_A_B_Affymetrix`
+               FROM `{table}`
+              WHERE `chromosome` = %s AND
+                    `position` = %s AND
+                    `SNP_name` = %s
+        """.format(table=table)
+        
+        #Query the database
+        conn = self.getConnection()
+        curs = conn.cursor()
+
+        #Now process each line of VEP input
+        header = None
+        data = []
+        
+        #Cicling along vep_input_data
+        for vep_input in vep_input_data:
+            n_of_rows = curs.execute(sql, vep_input)
+            
+            if n_of_rows == 0:
+                raise snpchimpDBException, "%s return %s records" %(sql.replace("%s","'%s'") %vep_input, n_of_rows)
+                
+            if header == None:
+                header = [col[0] for col in curs.description]
+            
+            #retrieve results and convert them in lists
+            results = curs.fetchall()
+            results = [list(result) for result in results]
+            
+            #Add this results to global results
+            data += list(results)
+
+        #Adding header        
+        data.insert(0, header)
+        
+        #returning results
+        return data
+        
+        
+        
+        
         
     

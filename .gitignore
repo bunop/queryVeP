@@ -54,3 +54,6 @@ docs/_build/
 
 #Pyenv local options
 .python-version
+
+#Virtualenv directories
+ENV/
