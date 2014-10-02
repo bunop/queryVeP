@@ -22,9 +22,6 @@ from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_COD
 # Logger instance
 logger = logging.getLogger(__name__)
 
-# Setting the default logging level of this module
-logger.setLevel(logging.WARN)
-
 class RESTException(Exception):
     "Class for exception raised by REST server"
 
@@ -136,7 +133,12 @@ class BaseEndPoint():
                 self.perform_rest_action(endpoint, data=json_msg, headers=hdrs)
 
             else:
-                logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                #Those attributes variate throw python 2.6 and 2.7
+                if hasattr(e, "reason"):
+                    logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                else:
+                    logger.critical('Request failed for {0}: Status code: {1.code}\n'.format(endpoint, e))
+                    
                 #throw my "useful exception"
                 raise RESTException(status=e.code, server=self.server)
 

@@ -1,0 +1,19 @@
+
+Dependencies (to install via package manager? - better)
+
+ - ipython (ex. yum install ipython - Only for testing purpose)
+ - mysql-devel (to compile libraries to connect to snpchimp database)
+ - python-virtualenv (to create a virtual environment to install next packages)
+ 
+Now switch to virtualenv to install necessary dependencies:
+
+$ mkdir ENV
+$ virtualenv -p /usr/bin/python ENV
+$ source ENV/bin/activate
+
+Now install python lybraries (in the new virtul environment). Python script
+prepend this directory in the sys.path library search path
+
+(ENV)$ pip install mako
+(ENV)$ pip install mysqlclient
+(ENV)$ pip install biopython

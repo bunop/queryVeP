@@ -1,0 +1,46 @@
+## -*- coding: utf-8 -*-
+## index.html
+##
+## Created on Thu Jul 31 12:17:33 2014
+##
+## @author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+##
+
+<%inherit file="base.html"/>
+<%namespace name="includes" file="includes.html"/>
+
+<%block name="header">
+    ## this is some header content<br>
+</%block>
+
+## begin of the body content.<br>
+
+## example table coded in pure python
+## <%
+##     rows = [[v for v in range(0,10)] for row in range(0,10)]
+##     header = ["col%s" %col for col in range(10)]
+## %>
+
+## testing utf8 encoding
+## Testing utf8 encoding: èòèalè<br>
+
+## Table results
+<table id="box-table-a">
+
+    <thead>
+        ${includes.makeheader(context["header"])}
+    </thead>
+
+    <tbody>
+        % for row in context["rows"]:
+            ${includes.makerow(row)}
+        % endfor
+    </tbody>
+
+</table>
+
+## end of body content.<br>
+
+<%block name="footer">
+    ## this is the footer<br>
+</%block>

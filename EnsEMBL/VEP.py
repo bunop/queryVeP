@@ -8,6 +8,13 @@ A module to interact with VEP EnsEMBL REST results
 
 """
 
+import REST
+import types
+import logging
+
+# Logger instance
+logger = logging.getLogger(__name__)
+
 class ColocatedVariant():
     """A class to deal with variant and colocated variant"""
 
@@ -110,6 +117,9 @@ class Variant(ColocatedVariant):
         self.most_severe_consequence = None
         self.seq_region_name = None
 
+        #If you return a VEP record, define here the headers of that row
+        self.header = ['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature', 'Feature_type', 'Consequence', 'cDNA_position', 'CDS_position', 'Protein_position', 'Amino_acids', 'Codons', 'Existing_variation', 'Extra']
+
         #Instantiate the class-base attributes
         ColocatedVariant.__init__(self)
 
@@ -190,7 +200,7 @@ class Variant(ColocatedVariant):
         #One or more record relying on how mano transcript_consequences
         if len(self.transcript_consequences) == 0:
             for tran in self.intergenic_consequences:
-                line = [self.id, "%s:%s" %(self.seq_region_name, self.start), tran.variant_allele, None, None, None, ",".join(tran.consequence_terms), None, None, None, None, None, self.getExistingVariation()]
+                line = [self.id, "%s:%s" %(self.seq_region_name, self.start), tran.variant_allele, None, None, None, ",".join(tran.consequence_terms), None, None, None, None, None, self.getExistingVariation(), None]
                 results += [line]
 
         else:
@@ -201,4 +211,108 @@ class Variant(ColocatedVariant):
 
         return results
 
+# A class to deal with input data
+class QueryVEP():
+    def __init__(self, inputfile=None):
+        self._offset = 50
+        self._handle = None
+        self._input = []
+        self._results = []
+        self._variants = []
+        self._rest = REST.EndPoints.EnsEMBLEndPoint()
+
+        if inputfile != None:
+            self.Open(inputfile)
+
+    def setRESTserver(self, server):
+        """Ovverride the default value of EnsEMBLEndPoint rest server"""
+        self._rest.server = server
+
+    def Open(self, inputfile):
+        """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
+
+        #Handle case
+        if type(inputfile) == types.FileType:
+            self._handle = inputfile
+
+        elif type(inputfile) == types.StringType:
+            self._handle = open(inputfile, "rU")
+            
+        elif inputfile.__module__ == "StringIO":
+            #StringIO has the __iter__ method
+            self._handle = inputfile
+
+        else:
+            raise Exception, "Cannot handle %s (%)" %(inputfile, type(inputfile))
+
+    def Query(self):
+        """Performing query requests"""
+
+        #resetting variables:
+        self._input = []
+        self._results = []
+
+        #read inputfile until self._offset lines. Do a query request then redo another request
+        #open inputfile as it is (don't check input file type)
+        counter = 0
+        tmp_input = []
+
+        for line in self._handle:
+            counter += 1
+            tmp_input += [line]
+
+            if counter % self._offset == 0:
+                self._queryREST(tmp_input)
+
+                #resetting tmp values
+                tmp_input = []
+
+        #Ensuring that all the requests were done
+        if len(tmp_input) > 0:
+            self._queryREST(tmp_input)
+
+        #Now trasform results in ensembl classes
+        self._variants = []
+
+        #Now cicle through each result and print a tuple. Write similar as VEP output
+        for result in self._results:
+            variant = Variant(result)
+            logger.debug(variant)
+            self._variants += [variant]
+
+
+    def _queryREST(self, tmp_input):
+        #perform a REST request
+        tmp_variants = {'variants': tmp_input}
+
+        logger.debug("Perform REST request")
+        tmp_results = self._rest.getVariantConsequencesByMultipleRegions(species="cow", variants=tmp_variants, canonical=1, ccds=1, domains=1, hgvs=1, numbers=1, protein=1, xref_refseq=1)
+        logger.debug("REST replies with %s results" %len(tmp_results))
+
+        #Sort result by input order
+        tmp_results = sorted(tmp_results, key=lambda result:tmp_variants["variants"].index(result["input"]))
+
+        #record inputs (debug)
+        self._input += tmp_input
+        self._results += tmp_results
+
+    def GetResults(self):
+        """Return a list of ENSEMBL VEP records"""
+
+        records = []
+
+        for var in self._variants:
+            for record in var.getVEPRecord():
+                records += [record]
+
+        return records
+
+    def GetVariantByID(self, ID):
+        """Return a variants by ID"""
+
+        for i, variant in enumerate(self._variants):
+            if variant.id == ID:
+                return self._results[i], variant
+
+        return None
 
