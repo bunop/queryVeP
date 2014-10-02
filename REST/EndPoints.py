@@ -175,8 +175,21 @@ class BaseEndPoint():
                 return False
 
         except urllib2.URLError, e:
-            logger.critical("%s returned :%s" %(endpoint, e.args))
+            logger.critical("%s returned :%s" %(urllib.basejoin(self.server,endpoint), e.args))
             return False
+            
+    def version(self, endpoint="info/rest"):
+        """Return REST server version"""
+        
+        logger.debug("Testing REST server version")
+        
+        #doing request and returning version
+        version = self.perform_rest_action(endpoint)
+        
+        logger.debug("%s REST server version is %s" %(self.server, version))
+        
+        return version["release"]
+        
 
 class EnsEMBLEndPoint(BaseEndPoint):
     def __init__(self, server=ENSEMBL_REST_SERVER, reqs_per_sec=15):

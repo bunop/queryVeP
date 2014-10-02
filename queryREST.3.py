@@ -166,7 +166,7 @@ def getStrand(strand):
 
 if __name__ == "__main__":
     #My input file
-    filename = "test_AX-18000257.csv"
+    filename = "SNPchimp_result_1454816959.csv"
 
     #determine infile format
     handle = open(filename)
