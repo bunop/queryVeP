@@ -224,6 +224,10 @@ class QueryVEP():
         if inputfile != None:
             self.Open(inputfile)
 
+    def setRESTserver(self, server):
+        """Ovverride the default value of EnsEMBLEndPoint rest server"""
+        self._rest.server = server
+
     def Open(self, inputfile):
         """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
 
@@ -233,6 +237,10 @@ class QueryVEP():
 
         elif type(inputfile) == types.StringType:
             self._handle = open(inputfile, "rU")
+            
+        elif inputfile.__module__ == "StringIO":
+            #StringIO has the __iter__ method
+            self._handle = inputfile
 
         else:
             raise Exception, "Cannot handle %s (%)" %(inputfile, type(inputfile))

@@ -133,7 +133,12 @@ class BaseEndPoint():
                 self.perform_rest_action(endpoint, data=json_msg, headers=hdrs)
 
             else:
-                logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                #Those attributes variate throw python 2.6 and 2.7
+                if hasattr(e, "reason"):
+                    logger.critical('Request failed for {0}: Status code: {1.code} Reason: {1.reason}\n'.format(endpoint, e))
+                else:
+                    logger.critical('Request failed for {0}: Status code: {1.code}\n'.format(endpoint, e))
+                    
                 #throw my "useful exception"
                 raise RESTException(status=e.code, server=self.server)
 

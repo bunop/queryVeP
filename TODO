@@ -6,4 +6,11 @@
       each query
       
     - Queries in SNPchimp browse page require a full table scan
-    
+
+*) Could be possible to give to SNPchiMpVep.py the query constructed in 
+   snpchimp php files instead of a list of SNPs? In such way, I can search
+   all snps selected via snpchimp browser.
+   
+*) Write the VCF file used in input in order to do VeP manually
+
+*) Graphical rapresentation of SNPs?

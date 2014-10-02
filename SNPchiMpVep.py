@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /var/www/cgi-bin/queryVeP/ENV/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -10,16 +10,15 @@ Testing snpchimp downloadSNP.php script, to see which parameter are defined by P
 """
 
 import cgi
-import sys
 import cgitb
 import getpass
 import logging
+import StringIO
 
-from Utils.helper import parseVePinput,getUniqueList
+#My modules
+import EnsEMBL.VEP
+from Utils.helper import parseVePinput,getUniqueList,SNPchiMp2VCF
 from Utils.snpchimpDB import SNPchiMp2
-
-#Adding virtualenv directory
-sys.path.insert(0, "ENV/lib/python2.6/site-packages")
 
 #Using mako templates to write html. Loading functions
 import mako
@@ -58,10 +57,36 @@ vep_input_data = getUniqueList(parseVePinput(vep_input_string))
 #Try to fetch alleles in database
 snpChimp = SNPchiMp2()
 snpChimp.getConnection()
-results = snpChimp.getVariants(animal, assembly, vep_input_data)
+snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
 #catch header
-header = results.pop(0)
+header = snpChimp_variants.pop(0)
 
-print mytemplate.render(header=header, rows=results)
+#Debug: print the SNPchimp table in html output
+#print mytemplate.render(header=header, rows=snpChimp_variants)
+
+#Convert SNPchimp data into VCF.
+vcf_handle = StringIO.StringIO()
+SNPchiMp2VCF(header, snpChimp_variants, vcf_handle)
+
+#Seeking vcf_handle to the start position
+vcf_handle.seek(0)
+
+#Use myclass data to do VEP requests
+VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle)
+
+#debug set my internal REST server
+VEP.setRESTserver("http://192.168.13.219:3000/")
+
+#Query ensembl via REST
+VEP.Query()
+
+#defined the results header format
+header = ['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature', 'Feature_type', 'Consequence', 'cDNA_position', 'CDS_position', 'Protein_position', 'Amino_acids', 'Codons', 'Existing_variation', 'Extra']
+
+#those are results
+rows = VEP.GetResults()
+
+#print data with mako templayes
+print mytemplate.render(header=header, rows=rows)
 
