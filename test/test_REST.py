@@ -9,8 +9,11 @@ Testing REST module
 """
 
 import sys
+import json
+import shlex
 import logging
 import unittest
+import subprocess
 
 #Adding library modules path
 sys.path.append("..")
@@ -20,11 +23,12 @@ import REST.Config
 import REST.EndPoints
 
 class test_BaseEndPoint(unittest.TestCase):
+    
     def setUp(self):
         """A test case to verify class assignment"""
         
         self.BaseEndPoint = REST.EndPoints.BaseEndPoint()
-        self.version = u'3.0.0'
+        
         
     def test_DefaultServerUP(self):
         """Test if default REST server is UP""" 
@@ -40,8 +44,36 @@ class test_BaseEndPoint(unittest.TestCase):
         self.assertTrue(status)
         
     def test_RESTversion(self):
-        version = self.BaseEndPoint.version()
+        version = self.BaseEndPoint.RESTversion()
         self.assertEqual(version, self.version)
+        
+    def test_APInDATAversions(self):
+        """Testing if data and software versions are the same"""
+        
+        data = self.BaseEndPoint.DATAversions()
+        api = self.BaseEndPoint.APIversion()
+        self.assertEquals(data[0], api)
+        
+    def test_DATAversionisOne(self):
+        """Testing the presence of ONE data version"""
+        
+        data = self.BaseEndPoint.DATAversions()
+        self.assertEqual(len(data), 1)
+    
+    def test_RESTaction(self):
+        """Testing a REST action with json data as POST content type"""
+        
+        #Check rest request via curl
+        curl_cmd = """curl -H 'Accept: application/json' -H 'Content-type: application/json' --data '{ "ids" : ["rs116035550", "COSM476" ] }' http://rest.ensembl.org/vep/human/id/"""
+        args = shlex.split(curl_cmd)
+        curl = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        reference = json.load(curl.stdout)
+        self.assertEqual(curl.wait(), 0)
+        
+        #check endopoint class
+        test = self.BaseEndPoint.perform_rest_action(endpoint="vep/human/id/", json_msg='{ "ids" : ["rs116035550", "COSM476" ] }')
+        self.assertEqual(reference, test)
+        
         
 #Doing tests
 if __name__ == "__main__":

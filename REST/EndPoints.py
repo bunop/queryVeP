@@ -178,17 +178,45 @@ class BaseEndPoint():
             logger.critical("%s returned :%s" %(urllib.basejoin(self.server,endpoint), e.args))
             return False
             
-    def version(self, endpoint="info/rest"):
+    def RESTversion(self, endpoint="info/rest"):
         """Return REST server version"""
         
         logger.debug("Testing REST server version")
         
         #doing request and returning version
-        version = self.perform_rest_action(endpoint)
+        result = self.perform_rest_action(endpoint)
+        version = result["release"]
         
         logger.debug("%s REST server version is %s" %(self.server, version))
         
-        return version["release"]
+        return version
+        
+    def DATAversions(self, endpoint="info/data"):
+        """Return returns the release of EnsEMBL data REST is currently accessing. 
+        Output is an array as REST could be bound to more than one release of Ensembl"""
+        
+        logger.debug("Testing the release of EnsEMBL data via REST")
+        
+        #doing request and returning version
+        results = self.perform_rest_action(endpoint)
+        versions = results["releases"]
+        
+        logger.debug("%s EnsEMBL data version is %s" %(self.server, versions))
+        
+        return versions
+        
+    def APIversion(self, endpoint="info/software"):
+        """Flags the release of EnsEMBL software the REST API is currently using."""
+        
+        logger.debug("Testing EnsEMBL software used by REST")
+        
+        #doing request and returning version
+        result = self.perform_rest_action(endpoint)
+        version = result["release"]
+        
+        logger.debug("%s EnsEMBL API version is %s" %(self.server, version))
+        
+        return version
         
 
 class EnsEMBLEndPoint(BaseEndPoint):
