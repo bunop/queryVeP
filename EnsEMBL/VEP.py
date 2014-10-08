@@ -15,6 +15,12 @@ import logging
 # Logger instance
 logger = logging.getLogger(__name__)
 
+# an exception class for variant
+class VariantException(Exception) : pass
+
+# the default exception class of vep methods
+class VePException(Exception) : pass
+
 class ColocatedVariant():
     """A class to deal with variant and colocated variant"""
 
@@ -146,7 +152,7 @@ class Variant(ColocatedVariant):
 
         #I can't have bot intergenic_consequences and transcript_consequences
         if len(self.intergenic_consequences) > 0  and len(self.transcript_consequences) > 0:
-            raise Exception, "I have both intergenic and transcript consequences for this variant"
+            raise VariantException, "I have both intergenic and transcript consequences for this variant"
 
     def __reprstr(self):
         colocated_variants = ",".join([var.id for var in self.colocated_variants])
@@ -157,7 +163,7 @@ class Variant(ColocatedVariant):
 
         #I can't have bot intergenic_consequences and transcript_consequences
         if len(self.intergenic_consequences) > 0  and len(self.transcript_consequences) > 0:
-            raise Exception, "I have both intergenic and transcript consequences for this variant"
+            raise VariantException, "I have both intergenic and transcript consequences for this variant"
 
         if transcript_consequences != '':
             returned_str = "id:%s; seq_region_name:%s; start:%s; end:%s; colocated_variants:%s; transcript_consequences:%s" %(self.id, self.seq_region_name, self.start, self.end, colocated_variants, transcript_consequences)
@@ -213,16 +219,23 @@ class Variant(ColocatedVariant):
 
 # A class to deal with input data
 class QueryVEP():
-    def __init__(self, inputfile=None):
+    def __init__(self, inputfile=None, specie=None):
+        """Instatiate the class. Inputfile and specie could be specified here. 
+        Setting species via init method set the default specie"""
+        
         self._offset = 50
         self._handle = None
         self._input = []
         self._results = []
         self._variants = []
         self._rest = REST.EndPoints.EnsEMBLEndPoint()
+        self.specie = None
 
         if inputfile != None:
             self.Open(inputfile)
+            
+        if specie != None:
+            self.specie = specie
 
     def setRESTserver(self, server):
         """Ovverride the default value of EnsEMBLEndPoint rest server"""
@@ -243,10 +256,18 @@ class QueryVEP():
             self._handle = inputfile
 
         else:
-            raise Exception, "Cannot handle %s (%)" %(inputfile, type(inputfile))
+            raise VePException, "Cannot handle %s (%)" %(inputfile, type(inputfile))
 
-    def Query(self):
+    def Query(self, specie=None):
         """Performing query requests"""
+
+        #Using the default specie if none
+        if specie == None:
+            specie = self.specie
+            
+        #A specie must be defined by the user a this point of code
+        if specie == None:
+            raise VePException, "A specie MUST be specified by __init__ or Query methods"
 
         #resetting variables:
         self._input = []
@@ -262,14 +283,14 @@ class QueryVEP():
             tmp_input += [line]
 
             if counter % self._offset == 0:
-                self._queryREST(tmp_input)
+                self._queryREST(tmp_input, specie)
 
                 #resetting tmp values
                 tmp_input = []
 
         #Ensuring that all the requests were done
         if len(tmp_input) > 0:
-            self._queryREST(tmp_input)
+            self._queryREST(tmp_input, specie)
 
         #Now trasform results in ensembl classes
         self._variants = []
@@ -281,12 +302,18 @@ class QueryVEP():
             self._variants += [variant]
 
 
-    def _queryREST(self, tmp_input):
+    def _queryREST(self, tmp_input, specie):
+        """perform REST request"""
+        
+        #A specie must be defined by the user a this point of code
+        if specie == None:
+            raise VePException, "A specie MUST be specified by __init__ or Query methods"
+        
         #perform a REST request
         tmp_variants = {'variants': tmp_input}
 
         logger.debug("Perform REST request")
-        tmp_results = self._rest.getVariantConsequencesByMultipleRegions(species="cow", variants=tmp_variants, canonical=1, ccds=1, domains=1, hgvs=1, numbers=1, protein=1, xref_refseq=1)
+        tmp_results = self._rest.getVariantConsequencesByMultipleRegions(species=specie, variants=tmp_variants, canonical=1, ccds=1, domains=1, hgvs=1, numbers=1, protein=1, xref_refseq=1)
         logger.debug("REST replies with %s results" %len(tmp_results))
 
         #Sort result by input order

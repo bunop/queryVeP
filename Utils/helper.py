@@ -95,5 +95,66 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
 
     logger.info("%s line(s) processed" %(count))
 
-#TODO: convert SNPchimp data in VEP default input file
+def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
+    """get header, snpchimp variants and write a standard VEP input file in a open 
+    file handle"""
+    
+    #Now I need to convert data like default VEP input file
+    chr_idx = header.index("chromosome")
+    pos_idx = header.index("position")
+    id_idx = header.index("SNP_name")
+
+    #This is the NCBI allele definition of the SNPs. Maybe it isn't equal to allele of Illumina of Affymetrix
+    #alleles_idx = header.index("alleles")
+    illu_idx = header.index("Alleles_A_B_FORWARD")
+    affy_idx = header.index("Alleles_A_B_Affymetrix")
+
+    #define the VCF as a TSV file
+    csvout = csv.writer(out_handle, delimiter="\t", lineterminator="\n")
+
+    #Now iterating across snpchimp data
+    for count, line in enumerate(snpChimp_variants):
+        #some intersting values
+        chrom = line[chr_idx]
+        pos = int(line[pos_idx])
+        ID = line[id_idx]
+
+        #The illumina of affy allele
+        affy_allele = line[affy_idx]
+        illu_allele = line[illu_idx]
+
+        #One of affymetrix or illumina should be defined. XOR conditions
+        if (affy_allele == '0/0') ^ (illu_allele == '0/0'):
+            if (affy_allele != '0/0'):
+                allele = affy_allele
+
+            else:
+                allele = illu_allele
+
+        else:
+            raise Exception, "affy_allele (%s) and illu_allel (%s) are BOTH defined for %s" (affy_allele, illu_allele, line)
+
+        #the strand is always positive
+        strand = "+"
+
+        #this row is in ensembl default VEP input format
+        row = [chrom, pos, pos, allele, strand, ID]
+        
+        #FIXME: the first allele in VEP input is the reference allele. I cannot
+        #know what the reference allele is from snpchimp data
+        
+        #TODO: determine the REF base of the SNP
+
+        #vep input line
+        vep_line = "\t".join([str(el) for el in row])
+
+        #counted lines start from 0
+        logger.debug("VEP input line %s: '%s'" %(count+1, vep_line))
+
+        #Write this line in output file
+        csvout.writerow(row)
+        
+    
+
+
 
