@@ -45,7 +45,7 @@ class test_BaseEndPoint(unittest.TestCase):
         
     def test_RESTversion(self):
         version = self.BaseEndPoint.RESTversion()
-        self.assertEqual(version, self.version)
+        self.assertEqual(version, REST.Config.ENSEMBL_REST_VERSION)
         
     def test_APInDATAversions(self):
         """Testing if data and software versions are the same"""

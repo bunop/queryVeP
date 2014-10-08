@@ -17,7 +17,7 @@ import StringIO
 
 #My modules
 import EnsEMBL.VEP
-from Utils.helper import parseVePinput,getUniqueList,SNPchiMp2VCF
+from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF
 from Utils.snpchimpDB import SNPchiMp2
 
 #Using mako templates to write html. Loading functions
@@ -49,7 +49,7 @@ form = cgi.FieldStorage()
 animal = cgi.escape(form.getvalue("animal", None))
 assembly = cgi.escape(form.getvalue("assembly", None))
 vep_input_string = cgi.escape(form.getvalue("vep_input_string", None))
-vep_input_data = getUniqueList(parseVePinput(vep_input_string))
+vep_input_data = getUniqueList(parseSNPchiMpdata(vep_input_string))
 
 #debug
 #print mytemplate.render(header=["animal", "assembly", "vep_input_data"], rows=[[animal, assembly, vep_input_data]])
@@ -86,6 +86,8 @@ header = ['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature', 'Featu
 
 #those are results
 rows = VEP.GetResults()
+
+#TODO: check if assembly is correct in each variation
 
 #print data with mako templayes
 print mytemplate.render(header=header, rows=rows)

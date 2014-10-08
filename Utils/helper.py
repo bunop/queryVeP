@@ -14,8 +14,9 @@ import logging
 # Logger instance
 logger = logging.getLogger(__name__)
 
-def parseVePinput(snpchimp_data):
-    """Parse vep_input_string from snpchimp downloadSNP.php scripts call"""
+def parseSNPchiMpdata(snpchimp_data):
+    """Parse SNPchiMp from snpchimp downloadSNP.php scripts call and generate tuples
+    in order to query SNPchiMp database"""
     
     parsed_data = []
     
@@ -75,7 +76,10 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
         #row = [chrom, pos, pos, allele, strand, ID]
 
         #because allele in SNPchimp doesn't like as VEP input, I will threat them like
-        #multiple VCF variant allele. VCF input string is 'CHROM POS ID REF ALT QUAL FILTER INFO'
+        #multiple VCF variant allele. IMPORTANT: in VCF variant alleles are separated by ","
+        allele = allele.replace("/", ",")
+
+        #VCF input string is 'CHROM POS ID REF ALT QUAL FILTER INFO'
         row = [chrom, pos, ID, "N", allele, ".", ".", "."]
         
         #TODO: determine the REF base of the SNP
@@ -91,5 +95,5 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
 
     logger.info("%s line(s) processed" %(count))
 
-
+#TODO: convert SNPchimp data in VEP default input file
 
