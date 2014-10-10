@@ -53,6 +53,9 @@ vep_input_data = getUniqueList(parseVePinput(vep_input_string))
 
 #debug
 #print mytemplate.render(header=["animal", "assembly", "vep_input_data"], rows=[[animal, assembly, vep_input_data]])
+logger.debug("received animal: '%s'" %(animal))
+logger.debug("received assembly: '%s'" %(assembly))
+logger.debug("received vep_input_string: '%s'" %(vep_input_string))
 
 #Try to fetch alleles in database
 snpChimp = SNPchiMp2()
