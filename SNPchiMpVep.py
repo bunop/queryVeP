@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /var/www/cgi-bin/queryVeP/ENV/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -61,7 +61,7 @@ logger.debug("received assembly: '%s'" %(assembly))
 logger.debug("received vep_input_string: '%s'" %(vep_input_string))
 
 #Try to fetch alleles in database
-snpChimp = SNPchiMp2(configfile="snpchimp2_conf.ini")
+snpChimp = SNPchiMp2()
 snpChimp.getConnection()
 snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
