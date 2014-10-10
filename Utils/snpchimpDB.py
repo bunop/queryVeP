@@ -45,8 +45,8 @@ class snpchimpDBException(Exception): pass
 class SNPchiMp2():
     """A class top deal with snpchimp database"""
     
-    def __init__(self):
-        self.config = Config()
+    def __init__(self,configfile="/var/www/.snpchimp2_conf.ini"):
+        self.config = Config(configfile)
         self.host = self.config.get("database","host")
         self.user = self.config.get("database","usr")
         self.passwd = self.config.get("database","pwd")

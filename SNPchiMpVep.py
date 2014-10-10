@@ -1,4 +1,4 @@
-#! /var/www/cgi-bin/queryVeP/ENV/bin/python
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -45,6 +45,9 @@ mytemplate = mylookup.get_template("index.html")
 #reading calling parameters
 form = cgi.FieldStorage()
 
+#debug
+logger.debug("form: %s" %(form))
+
 #Those are needed parameters
 animal = cgi.escape(form.getvalue("animal", None))
 assembly = cgi.escape(form.getvalue("assembly", None))
@@ -58,7 +61,7 @@ logger.debug("received assembly: '%s'" %(assembly))
 logger.debug("received vep_input_string: '%s'" %(vep_input_string))
 
 #Try to fetch alleles in database
-snpChimp = SNPchiMp2()
+snpChimp = SNPchiMp2(configfile="snpchimp2_conf.ini")
 snpChimp.getConnection()
 snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
@@ -76,10 +79,10 @@ SNPchiMp2VCF(header, snpChimp_variants, vcf_handle)
 vcf_handle.seek(0)
 
 #Use myclass data to do VEP requests
-VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle)
+VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle, specie=animal)
 
 #debug set my internal REST server
-VEP.setRESTserver("http://192.168.13.219:3000/")
+#VEP.setRESTserver("http://192.168.13.219:3000/")
 
 #Query ensembl via REST
 VEP.Query()
