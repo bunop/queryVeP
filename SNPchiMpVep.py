@@ -18,7 +18,7 @@ import StringIO
 #My modules
 import EnsEMBL.VEP
 from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF
-from Utils.snpchimpDB import SNPchiMp2
+from Utils.snpchimpDB import SNPchiMp2, SUPPORTED_ASSEMBLIES
 
 #Using mako templates to write html. Loading functions
 import mako
@@ -93,7 +93,9 @@ header = ['#Uploaded_variation', 'Location', 'Allele', 'Gene', 'Feature', 'Featu
 #those are results
 rows = VEP.GetResults()
 
-#TODO: check if assembly is correct in each variation
+#check if assembly is correct in each variation. SUPPORTED_ASSEMBLIES[assembly]
+#is a dictionary where keys are SNPchimp assembly, and values are HARD CODED ensembl assemblies
+VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])  
 
 #print data with mako templayes
 print mytemplate.render(header=header, rows=rows)

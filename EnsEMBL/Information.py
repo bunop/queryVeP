@@ -33,6 +33,23 @@ class Specie(Utils.helper.DummyClass):
     def __str__(self):
         return "%s.Specie(%s)" %(self.__module__, self.__reprstr())
 
+class Assembly(Utils.helper.DummyClass):
+    """A class to deal with assemblies"""
+    
+    def __init__(self, *initial_data, **kwargs):
+        """You must specify the assembly dictionary and a name key to identify this object"""
+        Utils.helper.DummyClass.__init__(self, *initial_data, **kwargs)
+        
+    def __reprstr(self):
+        return "name:%s; assembly_name:%s; default_coord_system_version:%s" %(self.name, self.assembly_name, self.default_coord_system_version)
+
+    def __repr__(self):
+        return "%s.Assembly instance at %s (%s)" %(self.__module__, hex(id(self)), self.__reprstr())
+
+    def __str__(self):
+        return "%s.Assembly(%s)" %(self.__module__, self.__reprstr())
+
+
 #a function to get the list of all available species
 def getAvailableSpecies():
     """Return a lisf of all available species"""
@@ -42,8 +59,8 @@ def getAvailableSpecies():
     species = [Specie(result) for result in results]
     
     #Now get all the available common name
-    name = [specie.name for specie in species]
-    return name
+    names = [specie.name for specie in species]
+    return names
 
 def getSpecieByName(name):
     """Get a Specie Obj by name (whatever)"""
@@ -63,5 +80,8 @@ def getSpecieByName(name):
 def getAssemblyByName(name):
     """A function to get the assembly by name (whatever)"""
     
-    pass
-    #rest.getAssembliesBySpecie(species="cow")
+    result = EnsEMBLEndPoint.getAssembliesBySpecie(species=name)
+    assembly = Assembly(result, name=name)
+    
+    return assembly
+    
