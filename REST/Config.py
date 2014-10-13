@@ -59,6 +59,16 @@ ENSEMBL_MIME_TYPES = {
 
 ENSEMBL_ENDPOINTS = {
     #Information Endpoints
+    'getAssembliesBySpecie' : {
+        'description' : "List the currently available assemblies for a species",
+        'url' : "info/assembly/:species",
+        'method' : "GET",
+        'response_formats' : ["json", "xml", "jsonp"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ["species"],
+        'optional_params' : ["bands", "callback"],
+    },
+
     'getAllAvailableSpecies' : {
         'description' : "Lists all available species, their aliases, available adaptor groups and data release.",
         'url' : "info/species",

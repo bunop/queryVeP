@@ -155,6 +155,20 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
         csvout.writerow(row)
         
     
+#Instantiate a generic class from a dict
+class DummyClass(object):
+    """Instantiate a class object from a dictionary. All keys become class attributes"""
+    
+    def __init__(self, *initial_data, **kwargs):
+        """Instantiate the class like DummyClass({"name": "abc", "age": 32}) or 
+        DummyClass({"name": "abc", "age": 32}) or both"""
+        
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+                
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
 
 
