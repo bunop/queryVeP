@@ -9,7 +9,7 @@ Created on Tue Jul 15 16:48:15 2014
 
 ENSEMBL_REST_SERVER = 'http://rest.ensembl.org/'
 
-ENSEMBL_REST_VERSION = u'3.0.0'
+ENSEMBL_REST_VERSION = u'3.1.0'
 
 ENSEMBL_MIME_TYPES = {
     'fasta' : {

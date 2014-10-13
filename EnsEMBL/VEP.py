@@ -240,6 +240,10 @@ class QueryVEP():
     def setRESTserver(self, server):
         """Ovverride the default value of EnsEMBLEndPoint rest server"""
         self._rest.server = server
+        
+    def getRESTserver(self):
+        """Return the value of EnsEMBLEndPoint rest server"""
+        return self._rest.server
 
     def Open(self, inputfile):
         """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
