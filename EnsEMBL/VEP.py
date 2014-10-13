@@ -240,6 +240,10 @@ class QueryVEP():
     def setRESTserver(self, server):
         """Ovverride the default value of EnsEMBLEndPoint rest server"""
         self._rest.server = server
+        
+    def getRESTserver(self):
+        """Return the value of EnsEMBLEndPoint rest server"""
+        return self._rest.server
 
     def Open(self, inputfile):
         """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
@@ -342,4 +346,17 @@ class QueryVEP():
                 return self._results[i], variant
 
         return None
+
+    def CheckAssembly(self, assembly):
+        """Check if assembly is the same specified by the user"""
+        
+        for var in self._variants:
+            if var.assembly_name != assembly:
+                #logging critical this message
+                logger.critical("failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly))
+                raise VePException, "failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly)
+                
+        
+    
+
 

@@ -39,7 +39,16 @@ class RESTException(Exception):
             self.notes = "Unknown description"
 
     def __str__(self):
-        return "REST server '%s' returned status %s (%s) : %s" %(self.server, self.status, self.name, self.notes)
+        message = "REST server '%s' returned status %s (%s) : %s" %(self.server, self.status, self.name, self.notes)
+
+        #Append message to defaul exception message
+        if self.message != '':
+            message += " (%s)" %(self.message)
+        
+        #This function must return a str istance
+        return message
+
+class EnsEMBLEndPointException(Exception): pass
 
 class BaseEndPoint():
     """Base class for EnsEMBL REST class"""
@@ -246,11 +255,12 @@ class EnsEMBLEndPoint(BaseEndPoint):
 
         logger.debug("Verifing mandatory parameters...")
 
-        #TODO: check those mandatory parameters againts config file
+        #TODO: check those mandatory parameters against config file
 
         for param in mandatory_params:
             if not kwargs.has_key(param):
-                raise Exception, "%s requires %s as mandatory params" %(api_call, mandatory_params)
+                logger.critical("%s requires %s as mandatory params" %(api_call, mandatory_params))
+                raise EnsEMBLEndPointException, "%s requires %s as mandatory params" %(api_call, mandatory_params)
 
         logger.debug("Checking additional parameters...")
 
@@ -267,8 +277,9 @@ class EnsEMBLEndPoint(BaseEndPoint):
             logger.debug("Cheking POST message...")
 
             if not kwargs.has_key(endpoint_params['message_param']):
-                logger.critical("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
-                raise Exception, "Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param'])
+                logger.error("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
+                logger.critical("Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param']))
+                raise EnsEMBLEndPointException, "Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param'])
 
             #in endpoint_params['message_param'] there's the key in which input data are
             json_msg = kwargs[endpoint_params['message_param']]
@@ -279,8 +290,9 @@ class EnsEMBLEndPoint(BaseEndPoint):
                     json_msg = json.dumps(json_msg)
 
                 except Exception, message:
+                    logger.error(message)
                     logger.critical("%s %s parameter has to be a json string or an object to be converted in json string" %(api_call, endpoint_params['message_param']))
-                    raise Exception, message
+                    raise EnsEMBLEndPointException, message
 
             del(kwargs[endpoint_params['message_param']])
 

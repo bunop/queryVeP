@@ -159,8 +159,13 @@ class SNPchiMp2():
         #returning results
         return data
         
-        
-        
-        
-        
     
+#The supported assemblies (snpchimp assembly name 2 ensembl assembly name - default_coord_system_version)
+SUPPORTED_ASSEMBLIES = {
+    'GalGal40': u'Galgal4',
+    'umd3': u'UMD3.1',
+    'equcab2_0': u'EquCab2',
+    'sscrofa_10_2': u'Sscrofa10.2',
+    'Oar_3_1': u'Oar_v3.1'
+}
+
