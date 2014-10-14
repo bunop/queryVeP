@@ -59,15 +59,18 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
         illu_allele = line[illu_idx]
 
         #One of affymetrix or illumina should be defined. XOR conditions
-        if (affy_allele == '0/0') ^ (illu_allele == '0/0'):
-            if (affy_allele != '0/0'):
+        #a missing allele could be 0/0 or NULL, 0/0 uf there are affymatrix or illumina data
+        #NULL if specie lack completely of affimetrix or illumina data. Columns are
+        #always the same so table are identical
+        if (affy_allele == 'NULL' or affy_allele == '0/0') ^ (illu_allele == 'NULL' or illu_allele == '0/0'):
+            if (affy_allele != '0/0' and affy_allele != 'NULL'):
                 allele = affy_allele
 
             else:
                 allele = illu_allele
 
         else:
-            raise Exception, "affy_allele (%s) and illu_allel (%s) are BOTH defined for %s" (affy_allele, illu_allele, line)
+            raise Exception, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
 
         #the strand is always positive
         #strand = "+"
@@ -124,15 +127,18 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
         illu_allele = line[illu_idx]
 
         #One of affymetrix or illumina should be defined. XOR conditions
-        if (affy_allele == '0/0') ^ (illu_allele == '0/0'):
-            if (affy_allele != '0/0'):
+        #a missing allele could be 0/0 or NULL, 0/0 uf there are affymatrix or illumina data
+        #NULL if specie lack completely of affimetrix or illumina data. Columns are
+        #always the same so table are identical
+        if (affy_allele == 'NULL' or affy_allele == '0/0') ^ (illu_allele == 'NULL' or illu_allele == '0/0'):
+            if (affy_allele != '0/0' and affy_allele != 'NULL'):
                 allele = affy_allele
 
             else:
                 allele = illu_allele
 
         else:
-            raise Exception, "affy_allele (%s) and illu_allel (%s) are BOTH defined for %s" (affy_allele, illu_allele, line)
+            raise Exception, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
 
         #the strand is always positive
         strand = "+"
