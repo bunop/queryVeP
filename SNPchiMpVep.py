@@ -103,26 +103,8 @@ logger.info("%s replies with %s results" %(VEP.getRESTserver(), len(rows)))
 
 #check if assembly is correct in each variation. SUPPORTED_ASSEMBLIES[assembly]
 #is a dictionary where keys are SNPchimp assembly, and values are HARD CODED ensembl assemblies
-try:
-    logger.debug("Checking assembly correctness...")
-    VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
-
-#TODO: remove this code when enseml fix the assembly in VEP results
-except EnsEMBL.VEP.VePException, message:
-    if "failed assembly version" in message.__str__():
-        logger.warning("QueryVEP returned an Exception for different assembly version. Fix this feature with new ensembl REST version")
-        logger.debug("Check if assembly is correct")
-        
-        #Check the assembly with Info endpoints
-        test_assembly = EnsEMBL.Information.getAssemblyByName(animal).default_coord_system_version
-        if test_assembly != SUPPORTED_ASSEMBLIES[assembly]:
-            logger.critical("failed assembly version for %s (%s != %s)" %(animal, test_assembly, assembly))
-            raise EnsEMBL.VEP.VePException, "failed assembly version for %s (%s != %s)" %(animal, test_assembly, assembly)
-        else:
-            logger.info("Assembly %s is correct for %s" %(test_assembly, animal))
-        
-    else:
-        raise EnsEMBL.VEP.VePException, message
+logger.debug("Checking assembly correctness...")
+VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
 
 #print data with mako templayes
 print mytemplate.render(header=header, rows=rows)
