@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! ./ENV/bin/python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -63,6 +63,9 @@ vep_input_data = getUniqueList(parseSNPchiMpdata(vep_input_string))
 logger.debug("received animal: '%s'" %(animal))
 logger.debug("received assembly: '%s'" %(assembly))
 logger.debug("received vep_input_string: '%s'" %(vep_input_string))
+
+#the key values read by ConfigParser in module Utils.snpchimpDB are always in lower case
+assembly = assembly.lower()
 
 #Try to fetch alleles in database
 logger.info("Connecting with snpchimp database")
