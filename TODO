@@ -19,3 +19,7 @@
 
 *) Testing module for all species defined in snpchimp
  
+------------------------------------------------------------------------
+
+The python virtualenv ENVironment isn't a good idea. I could call /cgi-bin/queryVeP/ENV/bin/easy_install
+Install the required module system wide or in a directory outside apache 

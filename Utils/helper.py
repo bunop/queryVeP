@@ -8,6 +8,7 @@ A series of useful function
 
 """
 
+import re
 import csv
 import logging
 
@@ -31,7 +32,7 @@ def getUniqueList(a_list):
     
     return list(set(a_list))
     
-def __parse_snpChimp_variants(header, snpChimp_variants):
+def iter_snpChimp_variants(header, snpChimp_variants):
     """An internal function to deal with common feature derived from snpchimp variant"""
     
     #Now I need to convert data like default VEP input file
@@ -81,7 +82,7 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
     #define the VCF as a TSV file
     csvout = csv.writer(out_handle, delimiter="\t", lineterminator="\n")
     
-    for [count, chrom, pos, ID, allele, strand] in __parse_snpChimp_variants(header, snpChimp_variants):
+    for [count, chrom, pos, ID, allele, strand] in iter_snpChimp_variants(header, snpChimp_variants):
         #because allele in SNPchimp doesn't like as VEP input, I will threat them like
         #multiple VCF variant allele. IMPORTANT: in VCF variant alleles are separated by ","
         allele = allele.replace("/", ",")
@@ -110,7 +111,7 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
     csvout = csv.writer(out_handle, delimiter="\t", lineterminator="\n")
 
     #Now iterating across snpchimp data
-    for [count, chrom, pos, ID, allele, strand] in __parse_snpChimp_variants(header, snpChimp_variants):
+    for [count, chrom, pos, ID, allele, strand] in iter_snpChimp_variants(header, snpChimp_variants):
         #the first allele in VEP input is the reference allele. I cannot know what 
         #the reference allele is from snpchimp data. I define the ref allele as a N
         allele = "/".join(["N", allele])
@@ -145,5 +146,22 @@ class DummyClass(object):
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
+#A function to parse location and to return chrom, start and end in a list
+def parseLocation(location):
+    #A function to parse location and to return chrom, start and end in a list
+    pattern = re.compile("^([^:]+):([0-9]+)\.\.([0-9]+)$")
+    match = re.search(pattern, location)
+    
+    if match == None:
+        raise Exception, "Location must be expressed like <chrom>:<start>..<end>"
+        
+    chrom, start, end = match.groups()
+    
+    #Casting position as integer
+    start = int(start)
+    end = int(end)
+
+    return chrom, start, end
+    
 
 
