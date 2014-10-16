@@ -13,13 +13,24 @@
 
 *) Graphical rapresentation of SNPs?
 
-*) Horse doesn't work {"error":"something bad has happened"}
-
-*) Sheep doens't work {"error":"something bad has happened"}
-
 *) Testing module for all species defined in snpchimp
- 
-------------------------------------------------------------------------
 
-The python virtualenv ENVironment isn't a good idea. I could call /cgi-bin/queryVeP/ENV/bin/easy_install
-Install the required module system wide or in a directory outside apache 
+*) Those SNPs in Oarv3
+
+SELECT chromosome, position, chip_name, rs, Alleles_A_B_FORWARD, Alleles_A_B_Affymetrix, SNP_name FROM `She_join_OAR_v3` WHERE (Alleles_A_B_FORWARD = "NULL" OR Alleles_A_B_FORWARD = "0/0") AND (Alleles_A_B_Affymetrix = "NULL" OR Alleles_A_B_Affymetrix = "0/0");
++------------+----------+-------------+-------------+---------------------+------------------------+-------------------------+
+| chromosome | position | chip_name   | rs          | Alleles_A_B_FORWARD | Alleles_A_B_Affymetrix | SNP_name                |
++------------+----------+-------------+-------------+---------------------+------------------------+-------------------------+
+| 4          | 87546564 | She_AgResHD | rs401441132 | 0/0                 | NULL                   | oar3_OAR4_87546564      |
+| 13         | 63047427 | She_AgResHD | rs408186625 | 0/0                 | NULL                   | oar3_OAR13_63047423     |
+| X          | 50971644 | She_AgResHD | rs421419167 | 0/0                 | NULL                   | oar3_OARX_50971660      |
+| 99         |        0 | She_AgResHD | NULL        | 0/0                 | NULL                   | oar3_OARX_50971660_dup  |
+| 99         |        0 | She_AgResHD | NULL        | 0/0                 | NULL                   | oar3_OAR1_80093512_dup  |
+| 99         |        0 | She_AgResHD | NULL        | 0/0                 | NULL                   | oar3_OAR13_63047423_dup |
+| 99         |        0 | She_AgResHD | NULL        | 0/0                 | NULL                   | oar3_OAR4_87546564_dup  |
+| 99         |        0 | She_AgResHD | NULL        | 0/0                 | NULL                   | oar3_OAR2_118149265     |
++------------+----------+-------------+-------------+---------------------+------------------------+-------------------------+
+
+raise Exceptions on helper.iter_snpChimp_variants. If those snps were assigned
+to insert and deletions like "I/D" or "D/I" I have to add an Exception, cause
+ensembl doesn't know how to handle those cases.

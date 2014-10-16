@@ -9,6 +9,7 @@ Testing Utils modules
 """
 
 import sys
+import StringIO
 import unittest
 
 #Adding library modules path
@@ -87,8 +88,59 @@ class test_SNPchiMp2(unittest.TestCase):
         for column in to_check:
             if not column in columns:
                 raise Exception, "Column %s not found" %(column)
+ 
+class test_helper(unittest.TestCase):
+    #the default header
+    header = ['chromosome', 'position', 'SNP_name', 'Alleles_A_B_FORWARD', 'Alleles_A_B_Affymetrix']
     
+    #a series of test cases that MUST fail. Only the first object is real (at the moment)
+    wrong_variants = [['4', 87546564L, 'oar3_OAR4_87546564', '0/0', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', '0/0' ], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', 'I/D', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'D/I', 'NULL']]
+    
+    #TODO: Add the new type of variants (In/De) in test case. handle those cases
+    
+    #A series of correct variants
+    correct_variants = [['1', 98367573L, 'BovineHD4100000577', 'A/G', '0/0'], ['1', 16947L, 'AX-18000040', '0/0', 'A/C'], ['1', 98367573L, 'BovineHD4100000577', 'A/G', 'NULL'], ['1', 16947L, 'AX-18000040', 'NULL', 'A/C']]
+    
+    #The wanted VCF line 'CHROM POS ID REF ALT QUAL FILTER INFO'
+    vcf_lines = ["\t".join(['1', str(98367573L), 'BovineHD4100000577', 'N', 'A,G', '.', '.', '.\n']), "\t".join(['1', str(16947L), 'AX-18000040', 'N', 'A,C', '.', '.', '.\n'])] * 2
+    
+    #The wanted VEP input line 'chrom, pos, pos, allele, strand, ID'
+    vep_lines = ["\t".join(['1', str(98367573L), str(98367573L), 'N/A/G', '+', 'BovineHD4100000577\n']), "\t".join(['1', str(16947L), str(16947L), 'N/A/C', '+', 'AX-18000040\n'])] * 2
+        
+    def setUp(self):
+        """Testing helper module"""
+        pass
+        
+        
+    def test_WrongInput2VCF(self):
+        """Testing wrong variants raise Execption"""
+        
+        for wrong_variant in self.wrong_variants:
+            #the parameters in assertRaises are given to the function using kwargs
+            self.assertRaises(Exception, Utils.helper.SNPchiMp2VCF, self.header, [wrong_variant], StringIO.StringIO())
+            
+    def test_SNPchiMp2VCF(self):
+        """Testing VCF from snpchimp data input"""
+        
+        for i, variant in enumerate(self.correct_variants):
+            out_handle = StringIO.StringIO()
+            Utils.helper.SNPchiMp2VCF(self.header, [variant], out_handle)
+            out_handle.seek(0)
+            self.assertEqual(out_handle.read(), self.vcf_lines[i])
+            
+    def test_SNPchiMp2VEPinput(self):
+        """Testing VEP input file from snpchimp data input"""
+        
+        for i, variant in enumerate(self.correct_variants):
+            out_handle = StringIO.StringIO()
+            Utils.helper.SNPchiMp2VEPinput(self.header, [variant], out_handle)
+            out_handle.seek(0)
+            self.assertEqual(out_handle.read(), self.vep_lines[i])
+   
 #Doing tests
 if __name__ == "__main__":
     #doing tests
     unittest.main()
+    
+
+

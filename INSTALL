@@ -1,19 +1,40 @@
 
-Dependencies (to install via package manager? - better)
+1) Install pyenv into /opt/pyenv
+########################################################################
 
- - ipython (ex. yum install ipython - Only for testing purpose)
- - mysql-devel (to compile libraries to connect to snpchimp database)
- - python-virtualenv (to create a virtual environment to install next packages)
- 
-Now switch to virtualenv to install necessary dependencies:
+# cd /opt
+# git clone https://github.com/yyuu/pyenv.git 
+# cd pyenv/
+# export PYENV_ROOT=/opt/pyenv
+# export PATH=/opt/pyenv/bin/:$PATH
+# eval "$(pyenv init -)"
 
-$ mkdir ENV
-$ virtualenv -p /usr/bin/python ENV
-$ source ENV/bin/activate
+Ensure that development libraries are installed. Ex
 
-Now install python lybraries (in the new virtul environment). Python script
-prepend this directory in the sys.path library search path
+# yum install readline-devel
+# yum install sqlite-devel
 
-(ENV)$ pip install mako
-(ENV)$ pip install mysqlclient
-(ENV)$ pip install biopython
+installing python 2.7.8 and 3.4.2 (stable versions)
+
+# pyenv install 2.7.8
+# pyenv install 3.4.2
+# pyenv rehash
+
+Setting the default python as 2.7.8 (only with pyenv)
+
+# pyenv global 2.7.8
+
+To use pyenv into your bash terminal, export those lines in your .bashrc
+
+export PYENV_ROOT=/opt/pyenv
+export PATH=/opt/pyenv/bin/:$PATH
+eval "$(pyenv init -)"
+
+2) install library dependencies
+########################################################################
+
+Now install python lybraries (with the default python of pyenv -2.7.8)
+
+# pip install mako
+# pip install mysqlclient
+# pip install biopython

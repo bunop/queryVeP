@@ -15,6 +15,9 @@ import logging
 # Logger instance
 logger = logging.getLogger(__name__)
 
+# import snpchimpDBException from snpchimpDB module
+from snpchimpDB import snpchimpDBException
+
 def parseSNPchiMpdata(snpchimp_data):
     """Parse SNPchiMp from snpchimp downloadSNP.php scripts call and generate tuples
     in order to query SNPchiMp database"""
@@ -68,7 +71,9 @@ def iter_snpChimp_variants(header, snpChimp_variants):
                 allele = illu_allele
 
         else:
-            raise Exception, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
+            raise snpchimpDBException, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
+
+        #TODO: check for insert and deletions in alleles
 
         #the strand is always positive
         strand = "+"
@@ -117,7 +122,7 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
         allele = "/".join(["N", allele])
         
         #this row is in ensembl default VEP input format
-        row = [chrom, pos, pos, allele, strand, ID]        
+        row = [chrom, pos, pos, allele, strand, ID]
         
         #TODO: determine the REF base of the SNP
 
