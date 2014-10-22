@@ -1,4 +1,4 @@
-#! /var/www/cgi-bin/queryVeP/ENV/bin/python
+#! /opt/pyenv/versions/2.7.8/bin/python2.7
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -37,7 +37,7 @@ print("Content-type: text/html\n")
 #cgi.test()
 
 #Logging istance
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger("SNPchiMpVep")
 
 logger.info("CGI script started")
