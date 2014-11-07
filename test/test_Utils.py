@@ -94,7 +94,7 @@ class test_helper(unittest.TestCase):
     header = ['chromosome', 'position', 'SNP_name', 'Alleles_A_B_FORWARD', 'Alleles_A_B_Affymetrix']
     
     #a series of test cases that MUST fail. Only the first object is real (at the moment)
-    wrong_variants = [['4', 87546564L, 'oar3_OAR4_87546564', '0/0', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', '0/0' ], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', 'I/D', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'D/I', 'NULL']]
+    wrong_variants = [['4', 87546564L, 'oar3_OAR4_87546564', '0/0', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', '0/0' ], ['4', 87546564L, 'oar3_OAR4_87546564', 'NULL', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', '0/0', '0/0'], ['4', 87546564L, 'oar3_OAR4_87546564', 'I/D', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'D/I', 'NULL'], ['4', 87546564L, 'oar3_OAR4_87546564', 'IN/DE', 'NULL']]
     
     #TODO: Add the new type of variants (In/De) in test case. handle those cases
     
@@ -113,11 +113,14 @@ class test_helper(unittest.TestCase):
         
         
     def test_WrongInput2VCF(self):
-        """Testing wrong variants raise Execption"""
+        """Testing if wrong variants raise Exception"""
         
         for wrong_variant in self.wrong_variants:
+            #A StringIO testing handle
+            test_handle = StringIO.StringIO()
+            
             #the parameters in assertRaises are given to the function using kwargs
-            self.assertRaises(Exception, Utils.helper.SNPchiMp2VCF, self.header, [wrong_variant], StringIO.StringIO())
+            self.assertRaises(Utils.helper.snpchimpDBException, Utils.helper.SNPchiMp2VCF, self.header, [wrong_variant], test_handle)
             
     def test_SNPchiMp2VCF(self):
         """Testing VCF from snpchimp data input"""

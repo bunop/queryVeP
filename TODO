@@ -34,3 +34,4 @@ SELECT chromosome, position, chip_name, rs, Alleles_A_B_FORWARD, Alleles_A_B_Aff
 raise Exceptions on helper.iter_snpChimp_variants. If those snps were assigned
 to insert and deletions like "I/D" or "D/I" I have to add an Exception, cause
 ensembl doesn't know how to handle those cases.
+

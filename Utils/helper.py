@@ -73,7 +73,11 @@ def iter_snpChimp_variants(header, snpChimp_variants):
         else:
             raise snpchimpDBException, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
 
-        #TODO: check for insert and deletions in alleles
+        #check for insert and deletions in alleles (a generic case)
+        if "I" in allele.upper() or "D" in allele.upper():
+            raise snpchimpDBException, "Cannot handle Inserts or Deletions in alleles!!!"
+            
+        #TODO: shall I avoid this particoular case?
 
         #the strand is always positive
         strand = "+"
@@ -106,7 +110,7 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
         #Write this line in output file
         csvout.writerow(row)
 
-    logger.info("%s line(s) processed" %(count))
+    logger.info("%s line(s) processed" %(count+1))
 
 def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
     """get header, snpchimp variants and write a standard VEP input file in a open 
