@@ -25,7 +25,7 @@ class test_Config(unittest.TestCase):
     def setUp(self):
         """A test case to verify that I can read configfile"""
         
-        self.Config = Utils.snpchimpDB.Config("../snpchimp2_conf.ini")
+        self.Config = Utils.snpchimpDB.Config()
         
         
     def test_AllowedAnimals(self):
@@ -52,7 +52,7 @@ class test_Config(unittest.TestCase):
 class test_SNPchiMp2(unittest.TestCase):
     def setUp(self):
         """Testing database connection and methods"""
-        self.SNPchiMp2 = Utils.snpchimpDB.SNPchiMp2("../snpchimp2_conf.ini")
+        self.SNPchiMp2 = Utils.snpchimpDB.SNPchiMp2()
         
     def test_Connection(self):
         """Testing database connection"""

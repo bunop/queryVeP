@@ -34,7 +34,7 @@ class configException(Exception): pass
 
 class Config(ConfigParser.ConfigParser):
     """A class to deal with Config file"""
-    def __init__(self, configfile):        
+    def __init__(self, configfile="../snpchimp2_conf.ini"):        
         #Read the global ini file with database credentials
         ConfigParser.ConfigParser.__init__(self)
         
