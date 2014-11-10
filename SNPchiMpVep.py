@@ -19,7 +19,7 @@ import StringIO
 import EnsEMBL.VEP
 import EnsEMBL.Information
 
-from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF
+from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF, linkifyTable
 from Utils.snpchimpDB import SNPchiMp2, SUPPORTED_ASSEMBLIES
 
 #Using mako templates to write html. Loading functions
@@ -37,7 +37,7 @@ print("Content-type: text/html\n")
 #cgi.test()
 
 #Logging istance
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger("SNPchiMpVep")
 
 logger.info("CGI script started")
@@ -108,6 +108,11 @@ logger.info("%s replies with %s results" %(VEP.getRESTserver(), len(rows)))
 #is a dictionary where keys are SNPchimp assembly, and values are HARD CODED ensembl assemblies
 logger.debug("Checking assembly correctness...")
 VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
+
+#now transforming ensembl names in link
+logger.debug("Add html link to table...")
+rows = linkifyTable(rows, header, animal)
+logger.debug("completed!")
 
 #print data with mako templayes
 print mytemplate.render(header=header, rows=rows)

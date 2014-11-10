@@ -8,6 +8,7 @@ A series of function to deal with snpchim database
 
 """
 
+import os
 import helper
 import logging
 import MySQLdb
@@ -39,6 +40,10 @@ class Config(ConfigParser.ConfigParser):
         ConfigParser.ConfigParser.__init__(self)
         
         logger.debug("reading configfile %s" %(configfile))
+
+        if not os.path.exists(configfile):
+            raise IOError, "File '%s' does't exists" %(configfile)
+        
         self.read(configfile)
         
     #some methods to get useful data from Config file
@@ -93,7 +98,7 @@ class snpchimpDBException(Exception): pass
 class SNPchiMp2():
     """A class top deal with snpchimp database"""
     
-    def __init__(self,configfile):
+    def __init__(self,configfile="../snpchimp2_conf.ini"):
         self.config = Config(configfile)
         self.host = self.config.get("database","host")
         self.user = self.config.get("database","usr")

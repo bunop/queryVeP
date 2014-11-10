@@ -10,6 +10,7 @@ A series of useful function
 
 import re
 import csv
+import copy
 import logging
 import HTMLTags
 
@@ -177,6 +178,10 @@ def parseLocation(location):
 def linkify(specie, field, allele=None):
     """A function able to make link from ensembl names"""
     
+    #return if field is empty
+    if field == None:
+        return
+    
     #ensembl genes
     pattern = "(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)"
     (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Gene/Summary?g=%s" %(specie, match.groups()[0]), target="_blank")),  field)
@@ -233,31 +238,33 @@ def linkify(specie, field, allele=None):
 
     return field
     
+def linkifyTable(rows, header, specie):
+    """Call linkify on each value of the table"""
     
-#  
-#  # locations
-#  while($string =~ m/(^[A-Z\_\d]+?:[1-9]\d+)(\-\d+)?/g) {
-#    my $loc = $1.($2 ? $2 : '');
-#    my ($chr, $start, $end) = split /\-|\:/, $loc;
-#    $end ||= $start;
-#    
-#    # adjust +/- 1kb
-#    my $view_start = $start - 10;
-#    my $view_end   = $end + 10;
-#    my $allele = $line->{Allele} || 'N';
-#    
-#    my $url =
-#      "http://www.ensembl.org/$species/Location/View?".
-#      "r=$chr:$view_start\-$view_end;format=vep_input;".
-#      "custom_feature=$chr%20$start%20$end%20$allele%201;".
-#      "custom_feature=normal";
-#    
-#    my $link = a({href => $url, target => "_blank"}, $string);
-#    $string =~ s/$loc/$link/;
-#  }
-#  
-#  #debug
-#  print "$config, $field, $string, $line\n";
-#  
-#  return $string;
-#}
+    #make header lower
+    header = copy.copy(header)
+    header = [col.lower() for col in header]
+    
+    #get a copy of rows
+    results = copy.deepcopy(rows)
+    
+    #find allele column
+    allele_idx = header.index("allele")
+    
+    #processing lines
+    for i, row in enumerate(rows):
+        for j, col in enumerate(row):
+            #the first column hasn't to be processed
+            if j == 0:
+                continue
+            
+            results[i][j] = linkify(specie, col, allele=row[allele_idx])
+        
+            #cicle for columns
+            if results[i][j] != rows[i][j]:
+                logger.debug("(%s:%s) %s -> %s" %(i,j, rows[i][j], results[i][j]))
+        
+    #cicle for rows
+    return results
+    
+
