@@ -174,60 +174,66 @@ def parseLocation(location):
     return chrom, start, end
     
 #A function strictly similar to the linkify function of variant_effect_predictor.pl
-def linkify(specie, field):
+def linkify(specie, field, allele=None):
     """A function able to make link from ensembl names"""
     
     #ensembl genes
     pattern = "(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)"
     (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Gene/Summary?g=%s" %(specie, match.groups()[0]), target="_blank")),  field)
-    
-    #(field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Gene/Summary?g=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
         
     #ensembl transcripts
-    pattern = "(ENS.{0,3}T\d+)"
-    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Transcript/Summary?t=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
+    pattern = "(ENS.{0,3}T\d+)"    
+    (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Transcript/Summary?t=%s" %(specie, match.groups()[0]), target="_blank")),  field)
 
     # Ensembl regfeats
     pattern = "(ENS.{0,3}R\d+)"
-    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Regulation/Summary?rf=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
+    (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Regulation/Summary?rf=%s" %(specie, match.groups()[0]), target="_blank")),  field)
 
     # variant identifiers
     pattern = "(rs\d+|COSM\d+|C[DMIX]\d+)"
-    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Variation/Summary?v=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
+    (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Variation/Summary?v=%s" %(specie, match.groups()[0]), target="_blank")),  field)
     
     #split strings a put a space after ; and ,
     pattern = "([,;])"
     (field, number) = re.subn(pattern, lambda match: "%s " %match.groups()[0], field)
+    
+    #locations
+    for match in re.finditer("(^[A-Z\_\d]+?:\d+)(\-\d+)?", field):
+        #redefine location
+        loc = match.groups()[0]
+        if match.groups()[1] != None:
+            loc += match.groups()[1]
+        
+        #splitting coordinates
+        tmp = re.split("\-|\:", loc)
+        
+        #case chrom:start
+        if len(tmp) == 2:
+            chrom, start, end = tmp[0], int(tmp[1]), int(tmp[1])
+        
+        elif len(tmp) == 3:
+            chrom, start, end = tmp[0], int(tmp[1]), int(tmp[2])
+            
+        else:
+            raise Exception, "Unknown location %s" %(loc)
+        
+        #  adjust start and end with the same values used in VeP
+        view_start = start - 10
+        view_end = end + 10
+        
+        if allele == None:
+            allele = "N"
+        
+        #make URL
+        url = "http://www.ensembl.org/{specie}/Location/View?r={chrom}:{view_start}-{view_end};format=vep_input;custom_feature={chrom}%20{start}%20{end}%20{allele}%201;custom_feature=normal".format(chrom=chrom, view_start=view_start, view_end=view_end, start=start, end=end, allele=allele, specie=specie)
+        
+        #replacing position with link
+        link = HTMLTags.A(loc, href=url, target="_blank")
+        field = field.replace(loc, str(link), 1)
 
     return field
     
     
-
-#sub linkify {
-#  my $config = shift;
-#  my $field  = shift;
-#  my $string = shift;
-#  my $line   = shift;
-#  
-#  #debug
-#  print "$config, $field, $string, $line\n";
-#  
-#  my $species = ucfirst($config->{species});
-#  
-#  # Ensembl genes
-#  $string =~ s/(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)/a({href => "http:\/\/www.ensembl.org\/$species\/Gene\/Summary\?g=$1", target => "_blank"}, $1)/ge;
-#  
-#  # Ensembl transcripts
-#  $string =~ s/(ENS.{0,3}T\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Transcript\/Summary\?t=$1", target => "_blank"}, $1)/ge;
-#  
-#  # Ensembl regfeats
-#  $string =~ s/(ENS.{0,3}R\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Regulation\/Summary\?rf=$1", target => "_blank"}, $1)/ge;
-#  
-#  # variant identifiers
-#  $string =~ s/(rs\d+|COSM\d+|C[DMIX]\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Variation\/Summary\?v=$1", target => "_blank"}, $1)/gie;
-#  
-#  # split strings. separa su ciascuna , e ; e li aggiunge uno spazio
-#  $string =~ s/([,;])/$1 /g;
 #  
 #  # locations
 #  while($string =~ m/(^[A-Z\_\d]+?:[1-9]\d+)(\-\d+)?/g) {

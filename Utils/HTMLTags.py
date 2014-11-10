@@ -1,4 +1,14 @@
-"""Classes to generate HTML in Python
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Nov 10 12:23:13 2014
+
+@author: Paolo Cozzi <paolo.cozzi@tecnoparco.org>
+
+Code founded here http://code.activestate.com/recipes/366000-htmltags-generate-html-in-python/
+
+Modified in order to have HTML tags in lower cases
+
+Classes to generate HTML in Python
 
 The HTMLTags module defines a class for all the valid HTML tags, written in
 uppercase letters. To create a piece of HTML, the general syntax is :
@@ -93,7 +103,7 @@ class TAG:
         res=cStringIO.StringIO()
         w=res.write
         if self.tag != "TEXT":
-            w("<%s" %self.tag)
+            w("<%s" %self.tag.lower())
             # attributes which will produce arg = "val"
             attr1 = [ k for k in self.attrs 
                 if not isinstance(self.attrs[k],bool) ]
@@ -110,7 +120,7 @@ class TAG:
         for child in self.children:
             w(str(child))
         if self.tag in CLOSING_TAGS:
-            w("</%s>" %self.tag)
+            w("</%s>" %self.tag.lower())
         if self.tag in LINE_BREAK_AFTER:
             w('\n')
         if hasattr(self,"brothers"):
