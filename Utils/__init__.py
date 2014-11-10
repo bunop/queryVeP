@@ -6,8 +6,9 @@ Created on Tue Sep 30 11:17:07 2014
 """
 
 import helper
+import HTMLTags
 import snpchimpDB
 
 __author__ = "Paolo Cozzi"
 __version__ = "0.2a"
-__all__ = ["helper", "snpchimpDB"]
+__all__ = ["helper", "snpchimpDB", "HTMLTags"]

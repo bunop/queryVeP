@@ -11,6 +11,7 @@ A series of useful function
 import re
 import csv
 import logging
+import HTMLTags
 
 # Logger instance
 logger = logging.getLogger(__name__)
@@ -172,5 +173,85 @@ def parseLocation(location):
 
     return chrom, start, end
     
+#A function strictly similar to the linkify function of variant_effect_predictor.pl
+def linkify(specie, field):
+    """A function able to make link from ensembl names"""
+    
+    #ensembl genes
+    pattern = "(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)"
+    (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Gene/Summary?g=%s" %(specie, match.groups()[0]), target="_blank")),  field)
+    
+    #(field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Gene/Summary?g=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
+        
+    #ensembl transcripts
+    pattern = "(ENS.{0,3}T\d+)"
+    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Transcript/Summary?t=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
 
+    # Ensembl regfeats
+    pattern = "(ENS.{0,3}R\d+)"
+    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Regulation/Summary?rf=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
 
+    # variant identifiers
+    pattern = "(rs\d+|COSM\d+|C[DMIX]\d+)"
+    (field, number) = re.subn(pattern, lambda match: """a({href => "http://www.ensembl.org/%s/Variation/Summary?v=%s", target => "_blank"}, %s)""" %(specie, match.groups()[0], match.groups()[0]), field)
+    
+    #split strings a put a space after ; and ,
+    pattern = "([,;])"
+    (field, number) = re.subn(pattern, lambda match: "%s " %match.groups()[0], field)
+
+    return field
+    
+    
+
+#sub linkify {
+#  my $config = shift;
+#  my $field  = shift;
+#  my $string = shift;
+#  my $line   = shift;
+#  
+#  #debug
+#  print "$config, $field, $string, $line\n";
+#  
+#  my $species = ucfirst($config->{species});
+#  
+#  # Ensembl genes
+#  $string =~ s/(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)/a({href => "http:\/\/www.ensembl.org\/$species\/Gene\/Summary\?g=$1", target => "_blank"}, $1)/ge;
+#  
+#  # Ensembl transcripts
+#  $string =~ s/(ENS.{0,3}T\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Transcript\/Summary\?t=$1", target => "_blank"}, $1)/ge;
+#  
+#  # Ensembl regfeats
+#  $string =~ s/(ENS.{0,3}R\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Regulation\/Summary\?rf=$1", target => "_blank"}, $1)/ge;
+#  
+#  # variant identifiers
+#  $string =~ s/(rs\d+|COSM\d+|C[DMIX]\d+)/a({href => "http:\/\/www.ensembl.org\/$species\/Variation\/Summary\?v=$1", target => "_blank"}, $1)/gie;
+#  
+#  # split strings. separa su ciascuna , e ; e li aggiunge uno spazio
+#  $string =~ s/([,;])/$1 /g;
+#  
+#  # locations
+#  while($string =~ m/(^[A-Z\_\d]+?:[1-9]\d+)(\-\d+)?/g) {
+#    my $loc = $1.($2 ? $2 : '');
+#    my ($chr, $start, $end) = split /\-|\:/, $loc;
+#    $end ||= $start;
+#    
+#    # adjust +/- 1kb
+#    my $view_start = $start - 10;
+#    my $view_end   = $end + 10;
+#    my $allele = $line->{Allele} || 'N';
+#    
+#    my $url =
+#      "http://www.ensembl.org/$species/Location/View?".
+#      "r=$chr:$view_start\-$view_end;format=vep_input;".
+#      "custom_feature=$chr%20$start%20$end%20$allele%201;".
+#      "custom_feature=normal";
+#    
+#    my $link = a({href => $url, target => "_blank"}, $string);
+#    $string =~ s/$loc/$link/;
+#  }
+#  
+#  #debug
+#  print "$config, $field, $string, $line\n";
+#  
+#  return $string;
+#}
