@@ -1,6 +1,9 @@
 
+#To redo-test if date timestamps haven't been updated
+.PHONY: all test clean
+
 all:
 	python -m compileall -f EnsEMBL REST Utils 
 
 test:
-	python -m unittest discover -s ./test -p 'test_*.py' -vv
+	cd test; python -m unittest discover -s ./ -p 'test_*.py' -vv

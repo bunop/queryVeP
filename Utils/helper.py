@@ -28,6 +28,15 @@ def parseSNPchiMpdata(snpchimp_data):
     
     for line in snpchimp_data.split(","):
         tmp = line.split(":")
+        
+        #snpChimd data are list of length 3
+        if len(tmp) != 3:
+            raise Exception, "snpchimp_data rows must be list of length 3"""
+            
+        #the second element is a position
+        tmp[1] = int(tmp[1])
+        
+        #add this tuple to a list
         parsed_data += [tuple(tmp)]
         
     return parsed_data
