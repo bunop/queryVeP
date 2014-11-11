@@ -58,6 +58,14 @@ def iter_snpChimp_variants(header, snpChimp_variants):
     #alleles_idx = header.index("alleles")
     illu_idx = header.index("Alleles_A_B_FORWARD")
     affy_idx = header.index("Alleles_A_B_Affymetrix")
+    
+    #for the ref_allele position (if exists)
+    try:
+        ref_idx = header.index("ref_allele")
+        
+    except ValueError, message:
+        logger.debug("%s. Using default 'N' value for ref_allele" %(message))
+        ref_idx = None
 
     #Now iterating across snpchimp data
     for count, line in enumerate(snpChimp_variants):
@@ -69,6 +77,12 @@ def iter_snpChimp_variants(header, snpChimp_variants):
         #The illumina of affy allele
         affy_allele = line[affy_idx]
         illu_allele = line[illu_idx]
+        
+        if ref_idx != None:
+            ref_allele = line[ref_idx]
+        else:
+            #Default ref_allele is N, if not present
+            ref_allele = "N"
 
         #One of affymetrix or illumina should be defined. XOR conditions
         #a missing allele could be 0/0 or NULL, 0/0 uf there are affymatrix or illumina data
@@ -94,7 +108,7 @@ def iter_snpChimp_variants(header, snpChimp_variants):
         strand = "+"
         
         #returning parsed data as a LIST
-        yield [count, chrom, pos, ID, allele, strand]
+        yield [count, chrom, pos, ID, allele, strand, ref_allele]
     
 def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
     """get header, snpchimp variants and write a VCF in a open file handle"""
@@ -102,15 +116,13 @@ def SNPchiMp2VCF(header, snpChimp_variants, out_handle):
     #define the VCF as a TSV file
     csvout = csv.writer(out_handle, delimiter="\t", lineterminator="\n")
     
-    for [count, chrom, pos, ID, allele, strand] in iter_snpChimp_variants(header, snpChimp_variants):
+    for [count, chrom, pos, ID, allele, strand, ref_allele] in iter_snpChimp_variants(header, snpChimp_variants):
         #because allele in SNPchimp doesn't like as VEP input, I will threat them like
         #multiple VCF variant allele. IMPORTANT: in VCF variant alleles are separated by ","
         allele = allele.replace("/", ",")
 
         #VCF input string is 'CHROM POS ID REF ALT QUAL FILTER INFO'
-        row = [chrom, pos, ID, "N", allele, ".", ".", "."]
-        
-        #TODO: determine the REF base of the SNP
+        row = [chrom, pos, ID, ref_allele, allele, ".", ".", "."]
 
         #VCF format 'CHROM POS ID REF ALT QUAL FILTER INFO'
         vcf_line = "\t".join([str(el) for el in row])
@@ -131,15 +143,13 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
     csvout = csv.writer(out_handle, delimiter="\t", lineterminator="\n")
 
     #Now iterating across snpchimp data
-    for [count, chrom, pos, ID, allele, strand] in iter_snpChimp_variants(header, snpChimp_variants):
+    for [count, chrom, pos, ID, allele, strand, ref_allele] in iter_snpChimp_variants(header, snpChimp_variants):
         #the first allele in VEP input is the reference allele. I cannot know what 
         #the reference allele is from snpchimp data. I define the ref allele as a N
-        allele = "/".join(["N", allele])
+        allele = "/".join([ref_allele, allele])
         
         #this row is in ensembl default VEP input format
         row = [chrom, pos, pos, allele, strand, ID]
-        
-        #TODO: determine the REF base of the SNP
 
         #vep input line
         vep_line = "\t".join([str(el) for el in row])
@@ -150,6 +160,7 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
         #Write this line in output file
         csvout.writerow(row)
         
+    logger.info("%s line(s) processed" %(count+1))
     
 #Instantiate a generic class from a dict
 class DummyClass(object):

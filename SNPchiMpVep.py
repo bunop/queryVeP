@@ -17,6 +17,7 @@ import StringIO
 
 #My modules
 import EnsEMBL.VEP
+import EnsEMBL.Sequence
 import EnsEMBL.Information
 
 from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF, linkifyTable
@@ -75,6 +76,9 @@ snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
 #catch header
 header = snpChimp_variants.pop(0)
+
+#find reference allele for snpChimp_variants
+header, snpChimp_variants = EnsEMBL.Sequence.getReferenceVariants(header, snpChimp_variants, animal)
 
 #Debug: print the SNPchimp table in html output
 #print mytemplate.render(header=header, rows=snpChimp_variants)
