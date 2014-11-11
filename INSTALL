@@ -42,5 +42,9 @@ Now install python lybraries (with the default python of pyenv -2.7.8)
 3) Do libraries testing
 ########################################################################
 
-$ cd test/
 $ make test
+
+4) Byte compile libraries
+########################################################################
+
+$ make
