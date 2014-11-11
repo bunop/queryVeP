@@ -37,7 +37,7 @@ print("Content-type: text/html\n")
 #cgi.test()
 
 #Logging istance
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
 logger = logging.getLogger("SNPchiMpVep")
 
 logger.info("CGI script started")
