@@ -191,6 +191,10 @@ def linkify(specie, field, allele=None):
     if field == None:
         return
     
+    #return if field is numeric
+    if isinstance(field, (int, long, float, complex)):
+        return field
+    
     #ensembl genes
     pattern = "(ENS.{0,3}G\d+|CCDS\d+\.?\d+?|N[MP]_\d+\.?\d+?)"
     (field, number) = re.subn(pattern, lambda match: str(HTMLTags.A("%s" %(match.groups()[0]), href="http://www.ensembl.org/%s/Gene/Summary?g=%s" %(specie, match.groups()[0]), target="_blank")),  field)
@@ -267,7 +271,13 @@ def linkifyTable(rows, header, specie):
             if j == 0:
                 continue
             
-            results[i][j] = linkify(specie, col, allele=row[allele_idx])
+            try:
+                results[i][j] = linkify(specie, col, allele=row[allele_idx])
+                
+            except TypeError, message:
+                logger.error("Exception caugth: %s" %(message))
+                logger.warn("isolating '%s'" %(col))
+                results[i][j] ="<<<%s>>>" %(col)
         
             #cicle for columns
             if results[i][j] != rows[i][j]:
