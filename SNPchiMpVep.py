@@ -91,7 +91,7 @@ vcf_handle.seek(0)
 VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle, specie=animal)
 
 #debug set my internal REST server
-#VEP.setRESTserver("http://192.168.13.219:3000/")
+VEP.setRESTserver("http://192.168.13.219:3000/")
 
 #Query ensembl via REST
 logger.info("Query %s via REST" %(VEP.getRESTserver()))
