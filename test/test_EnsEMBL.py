@@ -9,6 +9,7 @@ Testing ensembl modules
 """
 
 import sys
+import logging
 import unittest
 import StringIO
 
@@ -21,6 +22,10 @@ import EnsEMBL.VEP
 
 #where to find useful variables
 from Utils.snpchimpDB import SUPPORTED_ANIMALS, UNSUPPORTED_ANIMALS, SUPPORTED_ASSEMBLIES, Config
+
+#Logging istance
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.ERROR)
+logger = logging.getLogger(__name__)
 
 #Define the SNPs used as the query
 
@@ -64,6 +69,14 @@ class test_Information(unittest.TestCase):
 class test_QueryVEP(unittest.TestCase):
     vcf_str = "\n".join([getVCFline(snp1), getVCFline(snp2)])
     
+    results = {
+        "chicken" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "cow" : [[u'rs116645811', u'21:26960070', u'A', u'ENSBTAG00000012351', u'ENSBTAT00000016391', 'Transcript', u'intron_variant', None, None, None, None, None, None, u'distance=0;gene_symbol_source=EntrezGene;gene_symbol=ARNT2;biotype=protein_coding;strand=1'], [u'rs1135638', u'21:26965148', u'A', u'ENSBTAG00000012351', u'ENSBTAT00000016391', 'Transcript', u'downstream_gene_variant', None, None, None, None, None, None, u'distance=2278;gene_symbol_source=EntrezGene;gene_symbol=ARNT2;biotype=protein_coding;strand=1']],
+        "horse" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "pig" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "sheep" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+    }    
+    
     def setUp(self):
         """A test case to verify class assignment"""
         
@@ -73,15 +86,21 @@ class test_QueryVEP(unittest.TestCase):
         #the modulo to test
         self.QueryVEP = EnsEMBL.VEP.QueryVEP(inputfile=self.vcf_handle)
         
+        #internal testing
+        #self.QueryVEP.setRESTserver("http://localhost:3000")
+        
     def test_QueryVepOnSpecies(self):
         """Testing VEP rest api on SnpChimp species"""
         
         for animal in SUPPORTED_ANIMALS:
             self.vcf_handle.seek(0)
-            VeP = EnsEMBL.VEP.QueryVEP(inputfile=self.vcf_handle, specie=animal)
-            VeP.Query()
-#            results = VeP.GetResults()
-#            print results
+            self.QueryVEP.Open(inputfile=self.vcf_handle)
+            #print animal,
+            self.QueryVEP.Query(specie=animal)
+            results = self.QueryVEP.GetResults()
+            #print results
+            self.assertListEqual(results, self.results[animal])
+            
         
 #Doing tests
 if __name__ == "__main__":
