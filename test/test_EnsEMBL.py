@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 #Define the SNPs used as the query
 
 #"21 26960070 rs116645811 G A . . ."
-snp1=dict(chrom=21,pos=26960070,id="rs116645811",ref="G",alt="A")
+snp1=dict(chrom=1,pos=26960070,id="rs116645811",ref="G",alt="A")
 
 #"21 26965148 rs1135638 G A . . ."
-snp2=dict(chrom=21,pos=26965148,id="rs1135638",ref="G",alt="A")
+snp2=dict(chrom=1,pos=26965148,id="rs1135638",ref="G",alt="A")
 
 #a function to obtain a VCF line
 def getVCFline(snp):
@@ -70,11 +70,11 @@ class test_QueryVEP(unittest.TestCase):
     vcf_str = "\n".join([getVCFline(snp1), getVCFline(snp2)])
     
     results = {
-        "chicken" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
-        "cow" : [[u'rs116645811', u'21:26960070', u'A', u'ENSBTAG00000012351', u'ENSBTAT00000016391', 'Transcript', u'intron_variant', None, None, None, None, None, None, u'distance=0;gene_symbol_source=EntrezGene;gene_symbol=ARNT2;biotype=protein_coding;strand=1'], [u'rs1135638', u'21:26965148', u'A', u'ENSBTAG00000012351', u'ENSBTAT00000016391', 'Transcript', u'downstream_gene_variant', None, None, None, None, None, None, u'distance=2278;gene_symbol_source=EntrezGene;gene_symbol=ARNT2;biotype=protein_coding;strand=1']],
-        "horse" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
-        "pig" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
-        "sheep" : [[u'rs116645811', u'21:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'21:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "chicken" : [[u'rs116645811', u'1:26960070', u'A', u'ENSGALG00000009454', u'ENSGALT00000015386', 'Transcript', u'upstream_gene_variant', None, None, None, None, None, None, u'distance=52;gene_symbol_source=EntrezGene;gene_symbol=ZNF277;biotype=protein_coding;strand=-1'], [u'rs116645811', u'1:26960070', u'A', u'ENSGALG00000009480', u'ENSGALT00000038867', 'Transcript', u'upstream_gene_variant', None, None, None, None, None, None, u'distance=308;hgnc_id=HGNC:19192;gene_symbol_source=HGNC;gene_symbol=DOCK4;biotype=protein_coding;strand=1'], [u'rs1135638', u'1:26965148', u'A', u'ENSGALG00000009480', u'ENSGALT00000038867', 'Transcript', u'intron_variant', None, None, None, None, None, None, u'distance=0;hgnc_id=HGNC:19192;gene_symbol_source=HGNC;gene_symbol=DOCK4;biotype=protein_coding;strand=1']],
+        "cow" : [[u'rs116645811', u'1:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'1:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "horse" : [[u'rs116645811', u'1:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'1:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "pig" : [[u'rs116645811', u'1:26960070', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None], [u'rs1135638', u'1:26965148', u'A', None, None, None, u'intergenic_variant', None, None, None, None, None, None, None]],
+        "sheep" : [[u'rs116645811', u'1:26960070', u'A', u'ENSOARG00000005633', u'ENSOART00000006140', 'Transcript', u'missense_variant', 1220, 1220, 407, u'G/D', u'gGc/gAc', None, u'distance=0;sift_score=0;hgnc_id=HGNC:25820;gene_symbol_source=HGNC;gene_symbol=ZYG11B;biotype=protein_coding;strand=1;sift_prediction=deleterious'], [u'rs1135638', u'1:26965148', u'A', u'ENSOARG00000005633', u'ENSOART00000006140', 'Transcript', u'intron_variant', None, None, None, None, None, None, u'distance=0;hgnc_id=HGNC:25820;gene_symbol_source=HGNC;gene_symbol=ZYG11B;biotype=protein_coding;strand=1']],
     }    
     
     def setUp(self):
