@@ -11,12 +11,18 @@ A library to deal with reference sequences
 import copy
 import REST
 import logging
+import Bio.Seq
+import Bio.SeqRecord
+
 
 # Logger instance
 logger = logging.getLogger(__name__)
 
 def getReferenceVariants(header, snpChimp_variants, specie):
     """Retrieve reference sequence allele for snpChimp_variants"""
+
+    #this is the POST size for a single request
+    offset = 25
     
     #define a new header and new snpChimp_variants
     header = copy.deepcopy(header)
@@ -32,16 +38,55 @@ def getReferenceVariants(header, snpChimp_variants, specie):
     #processing variants and get reference sequence
     EndPoint = REST.EndPoints.EnsEMBLEndPoint()
     
+    #Add each location to an array
+    regions = []
+    idx = 0
+    
+    #debug
+    logger.info("Searching the reference alleles for snpChimp variants")
+    
     for i, variant in enumerate(snpChimp_variants):
         chrom, pos = variant[chr_idx], variant[pos_idx]
         location = "%s:%s..%s" %(chrom, pos, pos)
         
-        #get reference allele
-        record = EndPoint.getSequenceByRegion(species=specie, region=location)
-        ref_allele = record.seq.tostring() 
+        logger.debug("Added location '%s' for variant '%s'" %(location, variant))
         
-        variant.append(ref_allele)
+        #Add this location into a LIST
+        regions += [location]
+        
+        #check the maximum number of locations
+        if len(regions) >= offset:
+            data = {'regions' : regions }
+            logger.debug("Performing REQUEST with '%s'" %(data))
+        
+            #get reference allele
+            results = EndPoint.getSequenceByMultipleRegions(species=specie, regions=data)
+            logger.debug("REST replied with %s results" %(len(results)))
+            
+            #Add each reference allele to variant
+            for result in results:
+                ref_allele = result["seq"]
+                snpChimp_variants[idx].append(ref_allele)
+                idx += 1
+                
+            #reinitialize regions:
+            regions = []
+    
+    #Outside cicle, do last request if necessary
+    if len(regions) > 0:
+        data = {'regions' : regions }
+        logger.debug("Performing REQUEST with '%s'" %(data))
+        results = EndPoint.getSequenceByMultipleRegions(species=specie, regions=data)
+        logger.debug("REST replied with %s results" %(len(results)))          
+        
+        for result in results:
+            ref_allele = result["seq"]
+            snpChimp_variants[idx].append(ref_allele)
+            idx += 1
+            
+    #check that each position was processed
+    if idx != len(snpChimp_variants):
+        raise Exception, "Not all reference variants where retrieved"
         
     #returning the new header and new variants alleles
     return header, snpChimp_variants
-    

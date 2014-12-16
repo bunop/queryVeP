@@ -144,8 +144,8 @@ def SNPchiMp2VEPinput(header, snpChimp_variants, out_handle):
 
     #Now iterating across snpchimp data
     for [count, chrom, pos, ID, allele, strand, ref_allele] in iter_snpChimp_variants(header, snpChimp_variants):
-        #the first allele in VEP input is the reference allele. I cannot know what 
-        #the reference allele is from snpchimp data. I define the ref allele as a N
+        #the first allele in VEP input is the reference allele derived using sequence endpoints
+        #iter_snpChimp_variants may return N for ref_allele if not defined
         allele = "/".join([ref_allele, allele])
         
         #this row is in ensembl default VEP input format

@@ -17,8 +17,10 @@ import StringIO
 sys.path.append("..")
 
 #the modules to test
-import EnsEMBL.Information
 import EnsEMBL.VEP
+import EnsEMBL.Sequence
+import EnsEMBL.Information
+
 
 #where to find useful variables
 from Utils.snpchimpDB import SUPPORTED_ANIMALS, UNSUPPORTED_ANIMALS, SUPPORTED_ASSEMBLIES, Config
@@ -101,7 +103,32 @@ class test_QueryVEP(unittest.TestCase):
             #print results
             self.assertListEqual(results, self.results[animal])
             
+
+class test_Sequence(unittest.TestCase):
+    """A class to defined Sequence module for sequence endpoints"""
+    
+    def setUp(self):
+        self.header = ['chromosome', 'position', 'SNP_name', 'Alleles_A_B_FORWARD', 'Alleles_A_B_Affymetrix']
+        self.snpChimp_variants = [['1', 434180L, 'BTA-07251-no-rs', 'T/C', '0/0'], ['1', 135098L, 'Hapmap43437-BTA-101873', 'A/G', '0/0'], ['1', 522543L, 'BovineHD4100000004', 'T/C', '0/0'], ['1', 822710L, 'BovineHD4100000005', 'A/G', '0/0'], ['1', 506410L, 'BovineHD4100000002', 'T/C', '0/0'], ['1', 393248L, 'Hapmap34944-BES1_Contig627_1906', 'A/C', '0/0'], ['1', 517814L, 'BovineHD4100000003', 'T/C', '0/0'], ['1', 516404L, 'Hapmap53946-rs29015852', 'T/C', '0/0']]
+        self.animal = 'cow'
         
+        #the results
+        self.ref_alleles = [u'A', u'A', u'A', u'C', u'A', u'C', u'C', u'G']
+        
+    def test_getReferenceVariants(self):
+        """Testing VEP rest enpoints to get reference variants"""
+        
+        #this is a method, not a class
+        header, snpChimp_variants = EnsEMBL.Sequence.getReferenceVariants(self.header, self.snpChimp_variants, self.animal)
+        idx = header.index("ref_allele")
+        
+        #get the retrieved reference alleles
+        ref_alleles = [snpChimp_variant[idx] for snpChimp_variant in snpChimp_variants]
+        
+        #testing results
+        self.assertListEqual(ref_alleles, self.ref_alleles)
+        
+   
 #Doing tests
 if __name__ == "__main__":
     #doing tests
