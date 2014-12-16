@@ -80,7 +80,7 @@ ENSEMBL_ENDPOINTS = {
     },
 
     #Sequences EndPoints
-    'getSequenceByID' : {
+    'getSequenceById' : {
         'description' : "Request multiple types of sequence by stable identifier.",
         'url' : "sequence/id/:id",
         'method' : "GET",
@@ -88,6 +88,18 @@ ENSEMBL_ENDPOINTS = {
         'default_content_type' : ENSEMBL_MIME_TYPES['fasta']['content_type'],
         'required_params' : ['id'],
         'optional_params' : ['db_type', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature', 'multiple_sequences', 'object_type', 'species', 'type'],
+    },
+    
+    'getSequenceByMultipleIds' : {
+        'description' : "Request multiple types of sequence by a stable identifier list.",
+        'url' : "sequence/id",
+        'method' : "POST",
+        'response_formats' : ["json", "jsonp"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : [],
+        'optional_params' : ['callback', 'db_type', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature', 'object_type', 'species', 'type'],
+        'maximum_post_size' : 50,
+        'message_param' : 'ids',
     },
 
     'getSequenceByRegion' : {
@@ -98,6 +110,18 @@ ENSEMBL_ENDPOINTS = {
         'default_content_type' : ENSEMBL_MIME_TYPES['fasta']['content_type'],
         'required_params' : ['region', 'species'],
         'optional_params' : ['coord_system', 'coord_system_version', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature'],
+    },
+    
+    'getSequenceByMultipleRegions' : {
+        'description' : "Request multiple types of sequence by a list of regions",
+        'url' : "sequence/region/:species",
+        'method' : "POST",
+        'response_formats' : ["json", "jsonp"],
+        'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
+        'required_params' : ["species"],
+        'optional_params' : ['callback', 'coord_system', 'coord_system_version', 'expand_3prime', 'expand_5prime', 'format', 'mask', 'mask_feature'],
+        'maximum_post_size' : 50,
+        'message_param' : 'regions',
     },
 
     #Variation endpoints
@@ -129,6 +153,7 @@ ENSEMBL_ENDPOINTS = {
         'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
         'required_params' : ['species'],
         'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+        'maximum_post_size' : 1000,
         'message_param' : 'ids',
     },
 
@@ -150,6 +175,7 @@ ENSEMBL_ENDPOINTS = {
         'default_content_type' : ENSEMBL_MIME_TYPES['json']['content_type'],
         'required_params' : ['species'],
         'optional_params' : ['callback', 'canonical', 'ccds', 'domains', 'hgvs', 'numbers', 'protein', 'xref_refseq'],
+        'maximum_post_size' : 1000,
         'message_param' : 'variants',
     },
 
