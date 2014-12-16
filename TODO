@@ -9,11 +9,7 @@
 
    - At the momente VCF file is writtein in StringIO object
 
-*) The REF base of the VCF file is a N. Determine the real sequence
-
 *) Graphical rapresentation of SNPs?
-
-*) Testing module for all species defined in snpchimp
 
 *) Those SNPs in Oarv3
 

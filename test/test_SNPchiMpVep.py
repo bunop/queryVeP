@@ -46,11 +46,12 @@ if os.environ.has_key("HTTP_USER_AGENT"):
 #This type of request is a POST request. Is the same of
 #curl --data 'animal=cow&assembly=umd3&vep_input_string=1:516404:Hapmap53946-rs29015852' "http://localhost:10080//cgi-bin/pyEnsEMBLrest/SNPchiMpVep.py"
 #see http://curl.haxx.se/docs/httpscripting.html#POST tutorial for details
-request = urllib2.Request(url, data=params)
-response = urllib2.urlopen(request)
-
-#print response.info()
-
-content = response.read()
-
-print content
+if __name__ == "__main__":
+    request = urllib2.Request(url, data=params)
+    response = urllib2.urlopen(request)
+    
+    #print response.info()
+    
+    content = response.read()
+    
+    print content

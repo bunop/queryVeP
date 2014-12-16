@@ -17,6 +17,7 @@ import StringIO
 
 #My modules
 import EnsEMBL.VEP
+import EnsEMBL.Sequence
 import EnsEMBL.Information
 
 from Utils.helper import parseSNPchiMpdata,getUniqueList,SNPchiMp2VCF, linkifyTable
@@ -76,6 +77,12 @@ snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 #catch header
 header = snpChimp_variants.pop(0)
 
+#debug
+logger.info("Searching the reference alleles for snpChimp variants")
+
+#find reference allele for snpChimp_variants
+header, snpChimp_variants = EnsEMBL.Sequence.getReferenceVariants(header, snpChimp_variants, animal)
+
 #Debug: print the SNPchimp table in html output
 #print mytemplate.render(header=header, rows=snpChimp_variants)
 
@@ -94,7 +101,7 @@ VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle, specie=animal)
 #VEP.setRESTserver("http://192.168.13.219:3000/")
 
 #Query ensembl via REST
-logger.info("Query %s via REST" %(VEP.getRESTserver()))
+logger.info("Searching consequences using %s VEP endpoints" %(VEP.getRESTserver()))
 VEP.Query()
 
 #defined the results header format

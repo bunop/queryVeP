@@ -113,6 +113,11 @@ class BaseEndPoint():
             #Cheking response
             #TODO: return content type defined by the user, do not parse results at this point
             if content:
+                #Searching for server errors:
+                if "***ERROR***" in content:
+                    logger.critical(content)
+                    raise EnsEMBLEndPointException, content
+            
                 if self._info['content-type'] == 'application/json':
                     result = json.loads(content)
 
@@ -288,11 +293,26 @@ class EnsEMBLEndPoint(BaseEndPoint):
             if type(json_msg) != types.StringType:
                 try:
                     json_msg = json.dumps(json_msg)
-
+                
                 except Exception, message:
                     logger.error(message)
                     logger.critical("%s %s parameter has to be a json string or an object to be converted in json string" %(api_call, endpoint_params['message_param']))
                     raise EnsEMBLEndPointException, message
+                    
+            #If json_msg is a string, covert into dictionary to evaluate length
+            if endpoint_params.has_key('maximum_post_size'):
+                try:
+                    #eval json msg size
+                    tmp = json.loads(json_msg)
+                        
+                except Exception, message:
+                    logger.error("can't measure '%s' length" %(endpoint_params['message_param']))
+                    logger.warn("Ensure that '%s' length is lower than %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size']))
+                
+                else:
+                    if len(tmp[endpoint_params['message_param']]) > endpoint_params['maximum_post_size']:
+                        logger.critical("param '%s' exceded max POST size of %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size']))
+                        raise EnsEMBLEndPointException, "Number of '%s' is too high. Must be %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size'])                
 
             del(kwargs[endpoint_params['message_param']])
 
