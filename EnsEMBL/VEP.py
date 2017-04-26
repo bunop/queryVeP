@@ -220,9 +220,9 @@ class Variant(ColocatedVariant):
 # A class to deal with input data
 class QueryVEP():
     def __init__(self, inputfile=None, specie=None):
-        """Instatiate the class. Inputfile and specie could be specified here. 
+        """Instatiate the class. Inputfile and specie could be specified here.
         Setting species via init method set the default specie"""
-        
+
         self._offset = 50
         self._handle = None
         self._input = []
@@ -233,14 +233,14 @@ class QueryVEP():
 
         if inputfile != None:
             self.Open(inputfile)
-            
+
         if specie != None:
             self.specie = specie
 
     def setRESTserver(self, server):
         """Ovverride the default value of EnsEMBLEndPoint rest server"""
         self._rest.server = server
-        
+
     def getRESTserver(self):
         """Return the value of EnsEMBLEndPoint rest server"""
         return self._rest.server
@@ -254,7 +254,7 @@ class QueryVEP():
 
         elif type(inputfile) == types.StringType:
             self._handle = open(inputfile, "rU")
-            
+
         elif inputfile.__module__ == "StringIO":
             #StringIO has the __iter__ method
             self._handle = inputfile
@@ -268,7 +268,7 @@ class QueryVEP():
         #Using the default specie if none
         if specie == None:
             specie = self.specie
-            
+
         #A specie must be defined by the user a this point of code
         if specie == None:
             raise VePException, "A specie MUST be specified by __init__ or Query methods"
@@ -283,6 +283,9 @@ class QueryVEP():
         tmp_input = []
 
         for line in self._handle:
+            # deal with "\n"
+            line = line.strip()
+
             counter += 1
             tmp_input += [line]
 
@@ -308,17 +311,19 @@ class QueryVEP():
 
     def _queryREST(self, tmp_input, specie):
         """perform REST request"""
-        
+
         #A specie must be defined by the user a this point of code
         if specie == None:
             raise VePException, "A specie MUST be specified by __init__ or Query methods"
-        
+
         #perform a REST request
         tmp_variants = {'variants': tmp_input}
 
-        logger.debug("Perform REST request")
+        logger.debug("Perform REST request with:")
+        logger.debug("tmp_variants = %s" % (tmp_variants))
         tmp_results = self._rest.getVariantConsequencesByMultipleRegions(species=specie, variants=tmp_variants, canonical=1, ccds=1, domains=1, hgvs=1, numbers=1, protein=1, xref_refseq=1)
         logger.debug("REST replies with %s results" %len(tmp_results))
+        logger.debug("tmp_results = %s" % (tmp_results))
 
         #Sort result by input order
         tmp_results = sorted(tmp_results, key=lambda result:tmp_variants["variants"].index(result["input"]))
@@ -349,14 +354,14 @@ class QueryVEP():
 
     def CheckAssembly(self, assembly):
         """Check if assembly is the same specified by the user"""
-        
+
         for var in self._variants:
             if var.assembly_name != assembly:
                 #logging critical this message
                 logger.critical("failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly))
                 raise VePException, "failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly)
-                
-        
-    
+
+
+
 
 
