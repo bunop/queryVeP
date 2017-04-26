@@ -74,11 +74,18 @@ snpChimp = SNPchiMp2(configfile="snpchimp2_conf.ini")
 snpChimp.getConnection()
 snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
+# debug
+logger.debug("snpChimp_variants = %s" % (snpChimp_variants))
+
 #catch header
 header = snpChimp_variants.pop(0)
 
 #find reference allele for snpChimp_variants
+logger.debug("Searching for reference alleles...")
 header, snpChimp_variants = EnsEMBL.Sequence.getReferenceVariants(header, snpChimp_variants, animal)
+
+# debug
+logger.debug("snpChimp_variants = %s" % (snpChimp_variants))
 
 #Debug: print the SNPchimp table in html output
 #print mytemplate.render(header=header, rows=snpChimp_variants)
