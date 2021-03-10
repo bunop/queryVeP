@@ -1,4 +1,4 @@
-#! /opt/pyenv/versions/2.7.8/bin/python2.7
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Sep 29 15:55:47 2014
@@ -10,6 +10,7 @@ POST method
 
 """
 
+import os
 import cgi
 import cgitb
 import getpass
@@ -38,13 +39,12 @@ logging.basicConfig(
     level=logging.INFO)
 logger = logging.getLogger("SNPchiMpVep")
 
-# Warning: These techniques expose information that can be used by an attacker.
-# Use it only while developing/debugging. Once in production disable them.
-cgitb.enable()
+# determine where this script is
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # mako template for CGI-HTML rendering
 mylookup = mako.lookup.TemplateLookup(
-    directories=["./mako_templates/"],
+    directories=["%s/mako_templates/" % BASE_DIR],
     module_directory='/tmp/%s-mako_modules' % (
         getpass.getuser()
     ),
@@ -52,25 +52,33 @@ mylookup = mako.lookup.TemplateLookup(
     encoding_errors='replace', collection_size=500)
 mytemplate = mylookup.get_template("index.html")
 
+# Warning: These techniques expose information that can be used by an
+# attacker.Use it only while developing/debugging. Once in production
+# disable them.
+cgitb.enable(display=0)
+
 
 def myapp(environ, start_response):
+    logger.info("CGI script started")
+
     start_response('200 OK', [('Content-Type', 'text/html')])
 
     # debug
     # cgi.test()
 
-    logger.info("CGI script started")
+    # read body from wsgi environment
+    request_body = environ["wsgi.input"].read()
 
     # reading calling parameters
-    form = cgi.FieldStorage()
+    data = cgi.parse_qs(cgi.escape(request_body))
 
-    # debug
-    logger.debug("form: %s" % (form))
+    logger.info("Received data: %s" % data)
 
     # Those are needed parameters
-    animal = cgi.escape(form.getvalue("animal", None))
-    assembly = cgi.escape(form.getvalue("assembly", None))
-    vep_input_string = cgi.escape(form.getvalue("vep_input_string", None))
+    animal = data.get("animal")[0]
+    assembly = data.get("assembly")[0]
+    vep_input_string = data.get("vep_input_string")[0]
+
     vep_input_data = getUniqueList(parseSNPchiMpdata(vep_input_string))
 
     # debug
@@ -87,7 +95,7 @@ def myapp(environ, start_response):
 
     # Try to fetch alleles in database
     logger.info("Connecting with snpchimp database")
-    snpChimp = SNPchiMp2(configfile="snpchimp2_conf.ini")
+    snpChimp = SNPchiMp2(configfile="/var/www/.snpchimp2_conf.ini")
     snpChimp.getConnection()
     snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
 
