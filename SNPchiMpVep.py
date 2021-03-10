@@ -130,9 +130,6 @@ def myapp(environ, start_response):
     # Use myclass data to do VEP requests
     VEP = EnsEMBL.VEP.QueryVEP(inputfile=vcf_handle, specie=animal)
 
-    # debug set my internal REST server
-    # VEP.setRESTserver("http://192.168.13.219:3000/")
-
     # Query ensembl via REST
     logger.info("Searching consequences using %s VEP endpoints" % (
         VEP.getRESTserver()))
@@ -153,8 +150,15 @@ def myapp(environ, start_response):
     # check if assembly is correct in each variation.
     # SUPPORTED_ASSEMBLIES[assembly] is a dictionary where keys are SNPchimp
     # assemblies, and values are HARD CODED ensembl assemblies
-    logger.debug("Checking assembly correctness...")
-    VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
+    logger.debug("Checking if assembly is supported...")
+
+    try:
+        VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
+    except EnsEMBL.VEP.VePException as e:
+        message = "Assembly '%s' is not supported by EnsEMBL: %s" % (
+            assembly, e)
+        logger.critical(message)
+        return mytemplate.render(header=[], rows=[], message=message)
 
     # now transforming ensembl names in link
     logger.debug("Add html link to table...")

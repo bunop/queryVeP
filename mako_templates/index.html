@@ -25,6 +25,7 @@
 ## Testing utf8 encoding: èòèalè<br>
 
 ## Table results
+% if len(context["header"]) > 0:
 <table id="box-table-a">
 
     <thead>
@@ -38,6 +39,9 @@
     </tbody>
 
 </table>
+% else:
+  <b>${context["message"]}</b>
+% endif
 
 ## end of body content.<br>
 
