@@ -1,43 +1,18 @@
 
-1) Install pyenv into /opt/pyenv
+1) Run in a docker container
 ########################################################################
 
-# cd /opt
-# git clone https://github.com/yyuu/pyenv.git 
-# cd pyenv/
-# export PYENV_ROOT=/opt/pyenv
-# export PATH=/opt/pyenv/bin/:$PATH
-# eval "$(pyenv init -)"
-
-Ensure that development libraries are installed. Ex
-
-# yum install readline-devel
-# yum install sqlite-devel
-
-installing python 2.7.8 and 3.4.2 (stable versions)
-
-# pyenv install 2.7.8
-# pyenv install 3.4.2
-# pyenv rehash
-
-Setting the default python as 2.7.8 (only with pyenv)
-
-# pyenv global 2.7.8
-
-To use pyenv into your bash terminal, export those lines in your .bashrc
-
-export PYENV_ROOT=/opt/pyenv
-export PATH=/opt/pyenv/bin/:$PATH
-eval "$(pyenv init -)"
+$ docker run -ti --rm --link snpchimp-legacy_db_1:db \
+  --link snpchimp-legacy_nginx_1:nginx --network snpchimp-legacy_default \
+  -p 8000:8000 --name queryVeP --volume $PWD/:/var/www/cgi-bin/queryVeP \
+  python:2.7 /bin/bash
 
 2) install library dependencies
 ########################################################################
 
-Now install python lybraries (with the default python of pyenv -2.7.8)
+Now install python libraries (inside the docker container)
 
-# pip install mako
-# pip install mysqlclient
-# pip install biopython
+# pip install -r requirements.txt
 
 3) Do libraries testing
 ########################################################################

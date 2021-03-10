@@ -23,7 +23,7 @@ vep_input_string = '1:516404:Hapmap53946-rs29015852,1:516404:Hapmap53946-rs29015
 #create data like a dictionary
 data = dict(animal=animal, assembly=assembly, vep_input_string=vep_input_string)
 params = urllib.urlencode(data)
-url = "http://192.168.13.219:10080/cgi-bin/pyEnsEMBLrest/SNPchiMpVep.py"
+url = "http://nginx:20080/queryVeP/SNPchiMpVep.py"
 
 #Setting headers
 headers = {}
@@ -35,7 +35,7 @@ if os.environ.has_key("HTTP_USER_AGENT"):
 
     #To open this output with a browser
     print("Content-type: text/html\n")
-    
+
     #debug
     #cgi.test()
 
@@ -49,9 +49,9 @@ if os.environ.has_key("HTTP_USER_AGENT"):
 if __name__ == "__main__":
     request = urllib2.Request(url, data=params)
     response = urllib2.urlopen(request)
-    
+
     #print response.info()
-    
+
     content = response.read()
-    
+
     print content
