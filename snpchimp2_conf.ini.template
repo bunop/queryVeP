@@ -4,7 +4,7 @@
 [database]
 host = db
 usr = snpchimp_RO
-pwd = aifieoadfoh38023hwofh0
+pwd = ${SNPCHIMP_RO_PASSWORD}
 db = SNPchiMp2
 
 ; this section lists the allowed informations to be put into the query result

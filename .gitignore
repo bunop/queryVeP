@@ -58,3 +58,6 @@ docs/_build/
 
 #Virtualenv directories
 ENV/
+
+# generated from snpchimp2_conf.ini.template, contains a real DB password
+snpchimp2_conf.ini

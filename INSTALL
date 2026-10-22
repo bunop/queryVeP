@@ -14,12 +14,22 @@ Now install python libraries (inside the docker container)
 
 # pip install -r requirements.txt
 
-3) Do libraries testing
+3) Generate the local test config
+########################################################################
+
+snpchimp2_conf.ini is gitignored (it holds a DB password) and generated from
+snpchimp2_conf.ini.template; only the tests and standalone scripts read this
+copy - the deployed service is pointed at /var/www/.snpchimp2_conf.ini
+instead, shared with the main SNPCHIMP-legacy app.
+
+$ SNPCHIMP_RO_PASSWORD=<your test DB password> envsubst '${SNPCHIMP_RO_PASSWORD}' < snpchimp2_conf.ini.template > snpchimp2_conf.ini
+
+4) Do libraries testing
 ########################################################################
 
 $ make test
 
-4) Byte compile libraries
+5) Byte compile libraries
 ########################################################################
 
 $ make
