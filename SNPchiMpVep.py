@@ -25,7 +25,7 @@ import EnsEMBL.Information
 
 from Utils.helper import (
     parseSNPchiMpdata, getUniqueList, SNPchiMp2VCF, linkifyTable)
-from Utils.snpchimpDB import SNPchiMp2, SUPPORTED_ASSEMBLIES
+from Utils.snpchimpDB import SNPchiMp2, SUPPORTED_ASSEMBLIES, snpchimpDBException
 
 # Using mako templates to write html. Loading functions
 import mako
@@ -72,9 +72,14 @@ def myapp(environ, start_response):
     logger.info("Received data: %s" % data)
 
     # Those are needed parameters
-    animal = data.get("animal")[0]
-    assembly = data.get("assembly")[0]
-    vep_input_string = data.get("vep_input_string")[0]
+    animal = data.get("animal", [None])[0]
+    assembly = data.get("assembly", [None])[0]
+    vep_input_string = data.get("vep_input_string", [None])[0]
+
+    if not animal or not assembly or not vep_input_string:
+        message = "animal, assembly and vep_input_string are all required"
+        logger.critical(message)
+        return [mytemplate.render(header=[], rows=[], message=message)]
 
     vep_input_data = getUniqueList(parseSNPchiMpdata(vep_input_string))
 
@@ -94,7 +99,12 @@ def myapp(environ, start_response):
     logger.info("Connecting with snpchimp database")
     snpChimp = SNPchiMp2(configfile="/var/www/.snpchimp2_conf.ini")
     snpChimp.getConnection()
-    snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
+    try:
+        snpChimp_variants = snpChimp.getVariants(animal, assembly, vep_input_data)
+    except snpchimpDBException as e:
+        message = "Invalid animal or assembly: %s" % (e)
+        logger.critical(message)
+        return [mytemplate.render(header=[], rows=[], message=message)]
 
     # debug
     logger.debug("snpChimp_variants = %s" % (snpChimp_variants))
@@ -155,7 +165,7 @@ def myapp(environ, start_response):
         message = "Assembly '%s' is not supported by EnsEMBL: %s" % (
             assembly, e)
         logger.critical(message)
-        return mytemplate.render(header=[], rows=[], message=message)
+        return [mytemplate.render(header=[], rows=[], message=message)]
 
     # now transforming ensembl names in link
     logger.debug("Add html link to table...")
@@ -166,7 +176,7 @@ def myapp(environ, start_response):
     logger.info("CGI script finished")
 
     # print data with mako templayes
-    return mytemplate.render(header=header, rows=rows)
+    return [mytemplate.render(header=header, rows=rows)]
 
 
 if __name__ == '__main__':
