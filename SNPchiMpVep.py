@@ -171,9 +171,13 @@ def myapp(environ, start_response):
     try:
         VEP.CheckAssembly(SUPPORTED_ASSEMBLIES[assembly])
     except EnsEMBL.VEP.VePException as e:
-        message = "Assembly '%s' is not supported by EnsEMBL: %s" % (
-            assembly, e)
-        logger.critical(message)
+        # the details (variant dump) are already logged by CheckAssembly
+        message = (
+            "Ensembl VEP no longer serves the '%s' assembly (it has been "
+            "superseded by a newer one), so consequences can't be "
+            "predicted for these variants" % (SUPPORTED_ASSEMBLIES[assembly]))
+        logger.critical("Assembly '%s' is not supported by EnsEMBL: %s" % (
+            assembly, e))
         return [mytemplate.render(header=[], rows=[], message=message)]
 
     # now transforming ensembl names in link
