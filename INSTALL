@@ -5,7 +5,7 @@
 $ docker run -ti --rm --link snpchimp-legacy_db_1:db \
   --link snpchimp-legacy_nginx_1:nginx --network snpchimp-legacy_default \
   -p 8000:8000 --name queryVeP --volume $PWD/:/var/www/cgi-bin/queryVeP \
-  python:2.7 /bin/bash
+  python:3.12-slim /bin/bash
 
 2) install library dependencies
 ########################################################################

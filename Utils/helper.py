@@ -12,13 +12,11 @@ import re
 import csv
 import copy
 import logging
-import HTMLTags
+
+from Utils import HTMLTags
 
 # Logger instance
 logger = logging.getLogger(__name__)
-
-# import snpchimpDBException from snpchimpDB module
-from snpchimpDB import snpchimpDBException
 
 def parseSNPchiMpdata(snpchimp_data):
     """Parse SNPchiMp from snpchimp downloadSNP.php scripts call and generate tuples
@@ -31,7 +29,7 @@ def parseSNPchiMpdata(snpchimp_data):
         
         #snpChimd data are list of length 3
         if len(tmp) != 3:
-            raise Exception, "snpchimp_data rows must be list of length 3"""
+            raise Exception("snpchimp_data rows must be list of length 3")
             
         #the second element is a position
         tmp[1] = int(tmp[1])
@@ -48,7 +46,10 @@ def getUniqueList(a_list):
     
 def iter_snpChimp_variants(header, snpChimp_variants):
     """An internal function to deal with common feature derived from snpchimp variant"""
-    
+
+    # deferred import to avoid a circular import with Utils.snpchimpDB
+    from Utils.snpchimpDB import snpchimpDBException
+
     #Now I need to convert data like default VEP input file
     chr_idx = header.index("chromosome")
     pos_idx = header.index("position")
@@ -63,7 +64,7 @@ def iter_snpChimp_variants(header, snpChimp_variants):
     try:
         ref_idx = header.index("ref_allele")
         
-    except ValueError, message:
+    except ValueError as message:
         logger.debug("%s. Using default 'N' value for ref_allele" %(message))
         ref_idx = None
 
@@ -96,11 +97,11 @@ def iter_snpChimp_variants(header, snpChimp_variants):
                 allele = illu_allele
 
         else:
-            raise snpchimpDBException, "affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line)
+            raise snpchimpDBException("affy_allele (%s) and illu_allele (%s) are BOTH defined for %s" %(affy_allele, illu_allele, line))
 
         #check for insert and deletions in alleles (a generic case)
         if "I" in allele.upper() or "D" in allele.upper():
-            raise snpchimpDBException, "Cannot handle Inserts or Deletions in alleles!!!"
+            raise snpchimpDBException("Cannot handle Inserts or Deletions in alleles!!!")
             
         #TODO: shall I avoid this particoular case?
 
@@ -184,7 +185,7 @@ def parseLocation(location):
     match = re.search(pattern, location)
     
     if match == None:
-        raise Exception, "Location must be expressed like <chrom>:<start>..<end>"
+        raise Exception("Location must be expressed like <chrom>:<start>..<end>")
         
     chrom, start, end = match.groups()
     
@@ -203,7 +204,7 @@ def linkify(specie, field, allele=None):
         return
     
     #return if field is numeric
-    if isinstance(field, (int, long, float, complex)):
+    if isinstance(field, (int, float, complex)):
         return field
     
     #ensembl genes
@@ -244,7 +245,7 @@ def linkify(specie, field, allele=None):
             chrom, start, end = tmp[0], int(tmp[1]), int(tmp[2])
             
         else:
-            raise Exception, "Unknown location %s" %(loc)
+            raise Exception("Unknown location %s" %(loc))
         
         #  adjust start and end with the same values used in VeP
         view_start = start - 10
@@ -285,7 +286,7 @@ def linkifyTable(rows, header, specie):
             try:
                 results[i][j] = linkify(specie, col, allele=row[allele_idx])
                 
-            except TypeError, message:
+            except TypeError as message:
                 logger.error("Exception caugth: %s" %(message))
                 logger.warn("isolating '%s'" %(col))
                 results[i][j] ="<<<%s>>>" %(col)

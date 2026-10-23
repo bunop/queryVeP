@@ -14,8 +14,8 @@ deal with ensembl REST api.
 
 """
 
-import Config
-import EndPoints
+from REST import Config
+from REST import EndPoints
 
 __author__ = "Paolo Cozzi"
 __version__ = "0.2a"

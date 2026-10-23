@@ -83,7 +83,7 @@ def getReferenceVariants(header, snpChimp_variants, specie):
             
     #check that each position was processed
     if idx != len(snpChimp_variants):
-        raise Exception, "Not all reference variants where retrieved"
+        raise Exception("Not all reference variants where retrieved")
         
     #returning the new header and new variants alleles
     return header, snpChimp_variants

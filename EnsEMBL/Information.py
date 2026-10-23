@@ -74,7 +74,7 @@ def getSpecieByName(name):
             return specie
     
     #the default response if no name match
-    raise InfoException, "Species %s not found" %(name)
+    raise InfoException("Species %s not found" %(name))
     
 #A function to get the assembly by name (whatever)
 def getAssemblyByName(name):

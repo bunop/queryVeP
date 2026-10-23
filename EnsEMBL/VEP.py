@@ -8,8 +8,8 @@ A module to interact with VEP EnsEMBL REST results
 
 """
 
+import io
 import REST
-import types
 import logging
 
 # Logger instance
@@ -32,7 +32,7 @@ class ColocatedVariant():
         self.id = None
 
         if variant_dict != None:
-            for key, value in variant_dict.iteritems():
+            for key, value in variant_dict.items():
                 setattr(self, key, value)
 
     def __reprstr(self):
@@ -67,7 +67,7 @@ class TranscriptConsequence():
         self.codons = None
 
         if transcript_dict != None:
-            for key, value in transcript_dict.iteritems():
+            for key, value in transcript_dict.items():
                 setattr(self, key, value)
 
     def __reprstr(self):
@@ -84,7 +84,7 @@ class TranscriptConsequence():
 
         results = []
 
-        for key, value in self.__dict__.iteritems():
+        for key, value in self.__dict__.items():
             #there are some attributes which I don't care about
             if key not in ['consequence_terms', 'amino_acids', 'cdna_end', 'cdna_start', 'cds_end', 'cds_start', 'codons', 'gene_id', 'transcript_id', 'protein_end', 'protein_start', 'variant_allele'] and value != None:
                 results += ["%s=%s" %(key, value)]
@@ -99,7 +99,7 @@ class IntergenicConsequence():
         self.consequence_terms = []
 
         if intergenic_dict != None:
-            for key, value in intergenic_dict.iteritems():
+            for key, value in intergenic_dict.items():
                 setattr(self, key, value)
 
     def __reprstr(self):
@@ -130,19 +130,19 @@ class Variant(ColocatedVariant):
         ColocatedVariant.__init__(self)
 
         #the key to evaluate
-        variant_keys = variant_dict.keys()
+        variant_keys = list(variant_dict.keys())
 
         if variant_dict != None:
             #Verify special attributes
-            if variant_dict.has_key("colocated_variants"):
+            if "colocated_variants" in variant_dict:
                 self.colocated_variants = [ColocatedVariant(var) for var in variant_dict["colocated_variants"]]
                 variant_keys.remove("colocated_variants")
 
-            if variant_dict.has_key("transcript_consequences"):
+            if "transcript_consequences" in variant_dict:
                 self.transcript_consequences = [TranscriptConsequence(tran) for tran in variant_dict["transcript_consequences"]]
                 variant_keys.remove("transcript_consequences")
 
-            if variant_dict.has_key("intergenic_consequences"):
+            if "intergenic_consequences" in variant_dict:
                 self.intergenic_consequences = [IntergenicConsequence(tran) for tran in variant_dict["intergenic_consequences"]]
                 variant_keys.remove("intergenic_consequences")
 
@@ -152,7 +152,7 @@ class Variant(ColocatedVariant):
 
         #I can't have bot intergenic_consequences and transcript_consequences
         if len(self.intergenic_consequences) > 0  and len(self.transcript_consequences) > 0:
-            raise VariantException, "I have both intergenic and transcript consequences for this variant"
+            raise VariantException("I have both intergenic and transcript consequences for this variant")
 
     def __reprstr(self):
         colocated_variants = ",".join([var.id for var in self.colocated_variants])
@@ -163,7 +163,7 @@ class Variant(ColocatedVariant):
 
         #I can't have bot intergenic_consequences and transcript_consequences
         if len(self.intergenic_consequences) > 0  and len(self.transcript_consequences) > 0:
-            raise VariantException, "I have both intergenic and transcript consequences for this variant"
+            raise VariantException("I have both intergenic and transcript consequences for this variant")
 
         if transcript_consequences != '':
             returned_str = "id:%s; seq_region_name:%s; start:%s; end:%s; colocated_variants:%s; transcript_consequences:%s" %(self.id, self.seq_region_name, self.start, self.end, colocated_variants, transcript_consequences)
@@ -249,18 +249,15 @@ class QueryVEP():
         """Open a file for REST requests. Inputfile can be a file name or an open filehandle"""
 
         #Handle case
-        if type(inputfile) == types.FileType:
-            self._handle = inputfile
+        if isinstance(inputfile, str):
+            self._handle = open(inputfile, "r")
 
-        elif type(inputfile) == types.StringType:
-            self._handle = open(inputfile, "rU")
-
-        elif inputfile.__module__ == "StringIO":
-            #StringIO has the __iter__ method
+        elif isinstance(inputfile, (io.IOBase, io.StringIO, io.TextIOBase)):
+            #file objects and StringIO both support the __iter__ method
             self._handle = inputfile
 
         else:
-            raise VePException, "Cannot handle %s (%)" %(inputfile, type(inputfile))
+            raise VePException("Cannot handle %s (%s)" %(inputfile, type(inputfile)))
 
     def Query(self, specie=None):
         """Performing query requests"""
@@ -271,7 +268,7 @@ class QueryVEP():
 
         #A specie must be defined by the user a this point of code
         if specie == None:
-            raise VePException, "A specie MUST be specified by __init__ or Query methods"
+            raise VePException("A specie MUST be specified by __init__ or Query methods")
 
         #resetting variables:
         self._input = []
@@ -314,7 +311,7 @@ class QueryVEP():
 
         #A specie must be defined by the user a this point of code
         if specie == None:
-            raise VePException, "A specie MUST be specified by __init__ or Query methods"
+            raise VePException("A specie MUST be specified by __init__ or Query methods")
 
         #perform a REST request
         tmp_variants = {'variants': tmp_input}
@@ -359,7 +356,7 @@ class QueryVEP():
             if var.assembly_name != assembly:
                 #logging critical this message
                 logger.critical("failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly))
-                raise VePException, "failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly)
+                raise VePException("failed assembly version for %s (%s != %s)" %(var, var.assembly_name, assembly))
 
 
 

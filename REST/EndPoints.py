@@ -8,16 +8,16 @@ Created on Tue Jul 15 15:02:15 2014
 """
 
 import re
+import io
 import json
 import time
-import types
-import urllib
 import logging
-import urllib2
-import StringIO
+import urllib.request
+import urllib.parse
+import urllib.error
 import Bio.SeqIO
 
-from Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_CODES
+from REST.Config import ENSEMBL_ENDPOINTS, ENSEMBL_REST_SERVER, ENSEMBL_SUPPORTED_CODES
 
 # Logger instance
 logger = logging.getLogger(__name__)
@@ -28,9 +28,10 @@ class RESTException(Exception):
     def __init__(self, status, server):
         self.server = server
         self.status = status
+        self.message = ''
 
         #checking if this status exists
-        if ENSEMBL_SUPPORTED_CODES.has_key(status):
+        if status in ENSEMBL_SUPPORTED_CODES:
             self.name = ENSEMBL_SUPPORTED_CODES[status]["name"]
             self.notes = ENSEMBL_SUPPORTED_CODES[status]["notes"]
 
@@ -77,10 +78,10 @@ class BaseEndPoint():
 
         #Add additional params to endpoint
         if params:
-            endpoint += '?' + urllib.urlencode(params)
+            endpoint += '?' + urllib.parse.urlencode(params)
 
         #The definitive request URL
-        url = urllib.basejoin(self.server,endpoint)
+        url = urllib.parse.urljoin(self.server,endpoint)
 
         #this is the value returned by this function
         result = None
@@ -97,14 +98,15 @@ class BaseEndPoint():
             #debug
             logger.info("Performing request to '%s' json_data='%s'" %(url, json_msg))
 
-            #If data != None urllib2 will use a POST method
-            request = urllib2.Request(url, data=json_msg, headers=hdrs)
+            #If data != None urllib.request will use a POST method
+            data = json_msg.encode("utf-8") if json_msg is not None else None
+            request = urllib.request.Request(url, data=data, headers=hdrs)
             self._request = request
 
-            response = urllib2.urlopen(request)
+            response = urllib.request.urlopen(request)
             self._response = response
 
-            content = response.read()
+            content = response.read().decode("utf-8")
             self._content = content
 
             #Setting request and response values for debugging
@@ -116,13 +118,13 @@ class BaseEndPoint():
                 #Searching for server errors:
                 if "***ERROR***" in content:
                     logger.critical(content)
-                    raise EnsEMBLEndPointException, content
-            
+                    raise EnsEMBLEndPointException(content)
+
                 if self._info['content-type'] == 'application/json':
                     result = json.loads(content)
 
                 elif self._info['content-type'] == "text/x-fasta":
-                    handle = StringIO.StringIO(content)
+                    handle = io.StringIO(content)
                     result = Bio.SeqIO.read(handle, "fasta")
 
                 else:
@@ -132,13 +134,13 @@ class BaseEndPoint():
             self.req_count += 1
 
             #checking if this client has been rate limited
-            if self._info.has_key("x-ratelimit-remaining"):
+            if "x-ratelimit-remaining" in self._info:
                 logger.warning("This client has been rate-limited by '%s'" %(self.server))
                 logger.warning("You have %s requests left" %(self._info["x-ratelimit-remaining"]))
                 logger.warning("Counter will be resetted in %s seconds (%s)" %(self._info["x-ratelimit-reset"], time.ctime(time.time()+float(self._info["x-ratelimit-reset"]))))
 
         #For 200 error codes, the response object is returned immediately, else I will find an exception
-        except urllib2.HTTPError, e:
+        except urllib.error.HTTPError as e:
             # check if we are being rate limited by the server
             if e.code == 429 and 'Retry-After' in e.headers:
                 retry = e.headers['Retry-After']
@@ -156,13 +158,13 @@ class BaseEndPoint():
                 #throw my "useful exception"
                 raise RESTException(status=e.code, server=self.server)
 
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             # testing if server is up
             if not self.ping():
                 logger.error("Server %s seems to be down" %(self.server))
 
             #raising in any case an exception
-            raise urllib2.URLError, e
+            raise
 
         return result
 
@@ -172,12 +174,12 @@ class BaseEndPoint():
         logger.debug("Testing if EnsEMBL server is active")
 
         #I can't call perform rest action, because in that function I want to determine if server is up with this function
-        url = urllib.basejoin(self.server, endpoint)
-        request = urllib2.Request(url, headers={'Content-Type' : 'application/json'})
+        url = urllib.parse.urljoin(self.server, endpoint)
+        request = urllib.request.Request(url, headers={'Content-Type' : 'application/json'})
 
         try:
-            response = urllib2.urlopen(request)
-            content = response.read()
+            response = urllib.request.urlopen(request)
+            content = response.read().decode("utf-8")
             data = json.loads(content)
 
             if data == {u'ping': 1}:
@@ -188,8 +190,8 @@ class BaseEndPoint():
                 logger.critical("EnsEMBL REST server is DOWN")
                 return False
 
-        except urllib2.URLError, e:
-            logger.critical("%s returned :%s" %(urllib.basejoin(self.server,endpoint), e.args))
+        except urllib.error.URLError as e:
+            logger.critical("%s returned :%s" %(urllib.parse.urljoin(self.server,endpoint), e.args))
             return False
             
     def RESTversion(self, endpoint="info/rest"):
@@ -244,11 +246,11 @@ class EnsEMBLEndPoint(BaseEndPoint):
         def regFunc(key, endpoint_params):
             return lambda **kwargs: self.__genericFunction(key, endpoint_params, **kwargs)
 
-        for function, params in ENSEMBL_ENDPOINTS.iteritems():
+        for function, params in ENSEMBL_ENDPOINTS.items():
             self.__dict__[function] = regFunc(function, params)
 
             #Set __doc__ for generic function
-            if params.has_key("description"):
+            if "description" in params:
                 #Add a docstring to lambda function to get help on that function
                 self.__dict__[function].__doc__ = params["description"]
                 self.__dict__[function].__name__ = function
@@ -263,9 +265,9 @@ class EnsEMBLEndPoint(BaseEndPoint):
         #TODO: check those mandatory parameters against config file
 
         for param in mandatory_params:
-            if not kwargs.has_key(param):
+            if param not in kwargs:
                 logger.critical("%s requires %s as mandatory params" %(api_call, mandatory_params))
-                raise EnsEMBLEndPointException, "%s requires %s as mandatory params" %(api_call, mandatory_params)
+                raise EnsEMBLEndPointException("%s requires %s as mandatory params" %(api_call, mandatory_params))
 
         logger.debug("Checking additional parameters...")
 
@@ -281,38 +283,38 @@ class EnsEMBLEndPoint(BaseEndPoint):
         if endpoint_params['method'] == 'POST':
             logger.debug("Cheking POST message...")
 
-            if not kwargs.has_key(endpoint_params['message_param']):
+            if endpoint_params['message_param'] not in kwargs:
                 logger.error("%s must have %s parameter to get data via POST method" %(api_call, endpoint_params['message_param']))
                 logger.critical("Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param']))
-                raise EnsEMBLEndPointException, "Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param'])
+                raise EnsEMBLEndPointException("Error in %s: %s parameter is mandatory" %(api_call, endpoint_params['message_param']))
 
             #in endpoint_params['message_param'] there's the key in which input data are
             json_msg = kwargs[endpoint_params['message_param']]
 
             #Ensuring that json_msg is a string
-            if type(json_msg) != types.StringType:
+            if not isinstance(json_msg, str):
                 try:
                     json_msg = json.dumps(json_msg)
-                
-                except Exception, message:
+
+                except Exception as message:
                     logger.error(message)
                     logger.critical("%s %s parameter has to be a json string or an object to be converted in json string" %(api_call, endpoint_params['message_param']))
-                    raise EnsEMBLEndPointException, message
-                    
+                    raise EnsEMBLEndPointException(message)
+
             #If json_msg is a string, covert into dictionary to evaluate length
-            if endpoint_params.has_key('maximum_post_size'):
+            if 'maximum_post_size' in endpoint_params:
                 try:
                     #eval json msg size
                     tmp = json.loads(json_msg)
-                        
-                except Exception, message:
+
+                except Exception as message:
                     logger.error("can't measure '%s' length" %(endpoint_params['message_param']))
                     logger.warn("Ensure that '%s' length is lower than %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size']))
-                
+
                 else:
                     if len(tmp[endpoint_params['message_param']]) > endpoint_params['maximum_post_size']:
                         logger.critical("param '%s' exceded max POST size of %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size']))
-                        raise EnsEMBLEndPointException, "Number of '%s' is too high. Must be %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size'])                
+                        raise EnsEMBLEndPointException("Number of '%s' is too high. Must be %s" %(endpoint_params['message_param'], endpoint_params['maximum_post_size']))
 
             del(kwargs[endpoint_params['message_param']])
 
@@ -327,7 +329,7 @@ class EnsEMBLEndPoint(BaseEndPoint):
         #define non mandatory params to perform rest_action. Start
         additional_params = {}
 
-        for param, value in kwargs.iteritems():
+        for param, value in kwargs.items():
             if param in endpoint_params['optional_params']:
                 additional_params[param] = value
 

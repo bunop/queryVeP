@@ -11,7 +11,7 @@ Testing ensembl modules
 import sys
 import logging
 import unittest
-import StringIO
+import io
 
 #Adding library modules path
 sys.path.append("..")
@@ -83,7 +83,7 @@ class test_QueryVEP(unittest.TestCase):
         """A test case to verify class assignment"""
         
         #define VCF as a handle
-        self.vcf_handle = StringIO.StringIO(vcf_str)
+        self.vcf_handle = io.StringIO(vcf_str)
         
         #the modulo to test
         self.QueryVEP = EnsEMBL.VEP.QueryVEP(inputfile=self.vcf_handle)
@@ -109,7 +109,7 @@ class test_Sequence(unittest.TestCase):
     
     def setUp(self):
         self.header = ['chromosome', 'position', 'SNP_name', 'Alleles_A_B_FORWARD', 'Alleles_A_B_Affymetrix']
-        self.snpChimp_variants = [['1', 434180L, 'BTA-07251-no-rs', 'T/C', '0/0'], ['1', 135098L, 'Hapmap43437-BTA-101873', 'A/G', '0/0'], ['1', 522543L, 'BovineHD4100000004', 'T/C', '0/0'], ['1', 822710L, 'BovineHD4100000005', 'A/G', '0/0'], ['1', 506410L, 'BovineHD4100000002', 'T/C', '0/0'], ['1', 393248L, 'Hapmap34944-BES1_Contig627_1906', 'A/C', '0/0'], ['1', 517814L, 'BovineHD4100000003', 'T/C', '0/0'], ['1', 516404L, 'Hapmap53946-rs29015852', 'T/C', '0/0']]
+        self.snpChimp_variants = [['1', 434180, 'BTA-07251-no-rs', 'T/C', '0/0'], ['1', 135098, 'Hapmap43437-BTA-101873', 'A/G', '0/0'], ['1', 522543, 'BovineHD4100000004', 'T/C', '0/0'], ['1', 822710, 'BovineHD4100000005', 'A/G', '0/0'], ['1', 506410, 'BovineHD4100000002', 'T/C', '0/0'], ['1', 393248, 'Hapmap34944-BES1_Contig627_1906', 'A/C', '0/0'], ['1', 517814, 'BovineHD4100000003', 'T/C', '0/0'], ['1', 516404, 'Hapmap53946-rs29015852', 'T/C', '0/0']]
         self.animal = 'cow'
         
         #the results

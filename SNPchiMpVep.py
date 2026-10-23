@@ -11,11 +11,10 @@ POST method
 """
 
 import os
-import cgi
-import cgitb
+import io
 import getpass
 import logging
-import StringIO
+import urllib.parse
 
 from flup.server.fcgi import WSGIServer
 
@@ -52,11 +51,6 @@ mylookup = mako.lookup.TemplateLookup(
     encoding_errors='replace', collection_size=500)
 mytemplate = mylookup.get_template("index.html")
 
-# Warning: These techniques expose information that can be used by an
-# attacker.Use it only while developing/debugging. Once in production
-# disable them.
-cgitb.enable(display=0)
-
 
 def myapp(environ, start_response):
     logger.info("CGI script started")
@@ -67,10 +61,13 @@ def myapp(environ, start_response):
     # cgi.test()
 
     # read body from wsgi environment
-    request_body = environ["wsgi.input"].read()
+    request_body = environ["wsgi.input"].read().decode("utf-8")
 
     # reading calling parameters
-    data = cgi.parse_qs(cgi.escape(request_body))
+    #(previously passed through cgi.escape() first, but that HTML-escapes
+    #'&' to '&amp;', which corrupts multi-field POST bodies before they can
+    #be split on '&' -- dropped, it served no correct purpose here)
+    data = urllib.parse.parse_qs(request_body)
 
     logger.info("Received data: %s" % data)
 
@@ -121,7 +118,7 @@ def myapp(environ, start_response):
 
     # Convert SNPchimp data into VCF.
     logger.debug("Convert SNPchimp data into VCF")
-    vcf_handle = StringIO.StringIO()
+    vcf_handle = io.StringIO()
     SNPchiMp2VCF(header, snpChimp_variants, vcf_handle)
 
     # Seeking vcf_handle to the start position

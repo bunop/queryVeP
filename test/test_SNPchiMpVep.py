@@ -10,10 +10,8 @@ testing test_SNPchiMpVep.py with sample data
 """
 
 import os
-import cgi
-import cgitb
-import urllib
-import urllib2
+import urllib.request
+import urllib.parse
 import unittest
 
 animal = 'cow'
@@ -22,17 +20,14 @@ vep_input_string = '1:516404:Hapmap53946-rs29015852,1:516404:Hapmap53946-rs29015
 
 #create data like a dictionary
 data = dict(animal=animal, assembly=assembly, vep_input_string=vep_input_string)
-params = urllib.urlencode(data)
+params = urllib.parse.urlencode(data)
 url = "http://nginx:20080/queryVeP/SNPchiMpVep.py"
 
 #Setting headers
 headers = {}
 
 #debug
-if os.environ.has_key("HTTP_USER_AGENT"):
-    #Warning: These techniques expose information that can be used by an attacker. Use it only while developing/debugging. Once in production disable them.
-    cgitb.enable()
-
+if "HTTP_USER_AGENT" in os.environ:
     #To open this output with a browser
     print("Content-type: text/html\n")
 
@@ -47,11 +42,11 @@ if os.environ.has_key("HTTP_USER_AGENT"):
 #curl --data 'animal=cow&assembly=umd3&vep_input_string=1:516404:Hapmap53946-rs29015852' "http://localhost:10080//cgi-bin/pyEnsEMBLrest/SNPchiMpVep.py"
 #see http://curl.haxx.se/docs/httpscripting.html#POST tutorial for details
 if __name__ == "__main__":
-    request = urllib2.Request(url, data=params)
-    response = urllib2.urlopen(request)
+    request = urllib.request.Request(url, data=params.encode("utf-8"))
+    response = urllib.request.urlopen(request)
 
     #print response.info()
 
     content = response.read()
 
-    print content
+    print(content)

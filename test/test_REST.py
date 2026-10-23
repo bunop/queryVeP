@@ -45,7 +45,7 @@ class test_BaseEndPoint(unittest.TestCase):
 
         data = self.BaseEndPoint.DATAversions()
         api = self.BaseEndPoint.APIversion()
-        self.assertEquals(data[0], api)
+        self.assertEqual(data[0], api)
 
     def test_DATAversionisOne(self):
         """Testing the presence of ONE data version"""

@@ -9,10 +9,11 @@ A series of function to deal with snpchim database
 """
 
 import os
-import helper
 import logging
 import MySQLdb
-import ConfigParser
+import configparser
+
+from Utils import helper
 
 # Logger instance
 logger = logging.getLogger(__name__)
@@ -33,16 +34,19 @@ UNSUPPORTED_ANIMALS = ['goat']
 
 class configException(Exception): pass
 
-class Config(ConfigParser.ConfigParser):
+class Config(configparser.ConfigParser):
     """A class to deal with Config file"""
-    def __init__(self, configfile="../snpchimp2_conf.ini"):        
+    def __init__(self, configfile="../snpchimp2_conf.ini"):
         #Read the global ini file with database credentials
-        ConfigParser.ConfigParser.__init__(self)
-        
+        #strict=False: this file also has repeated 'info[]' keys (PHP-style
+        #list) in a section queryVeP doesn't read; Python 2's ConfigParser
+        #tolerated duplicate options, Python 3's defaults to strict and raises
+        configparser.ConfigParser.__init__(self, strict=False)
+
         logger.debug("reading configfile %s" %(configfile))
 
         if not os.path.exists(configfile):
-            raise IOError, "File '%s' does't exists" %(configfile)
+            raise IOError("File '%s' does't exists" %(configfile))
         
         self.read(configfile)
         
@@ -62,7 +66,7 @@ class Config(ConfigParser.ConfigParser):
         """Return a dictionary of allowed assemblies giving an animal"""
             
         if animal not in self.getAllowedAnimals().keys():
-            raise configException, "I couldn't find '%s_assemblies' in config file" %(animal)
+            raise configException("I couldn't find '%s_assemblies' in config file" %(animal))
             
         return dict((k,v) for k,v in self.items("%s_assemblies" %(animal)))
         
@@ -75,19 +79,19 @@ class Config(ConfigParser.ConfigParser):
         #now iterate among assemblies
         supported_assembly = None
         
-        for assembly in assemblies.iterkeys():
+        for assembly in assemblies.keys():
             if assembly in SUPPORTED_ASSEMBLIES.keys():
                 #add supported assembly for this animal if it is None
                 if supported_assembly == None:
                     supported_assembly = assembly
-                    
+
                 else:
                     #in this case I've just seen a supported assebly
-                    raise configException, "There are more supported assemblyes for %s (%s : %s)" %(animal, supported_assembly, assembly)
-        
+                    raise configException("There are more supported assemblyes for %s (%s : %s)" %(animal, supported_assembly, assembly))
+
         #Return the supported assembly for this animal (this is the snpchimp supported assembly)
         if supported_assembly == None:
-            raise configException, "%s hasn't a supported assembly" %(animal)
+            raise configException("%s hasn't a supported assembly" %(animal))
             
         return supported_assembly
         
@@ -120,9 +124,9 @@ class SNPchiMp2():
         yours host, user, passws and db parameters"""
         
         #override the default parameters, if specified
-        for k,v in kwargs.iteritems():
+        for k,v in kwargs.items():
             if k not in self.__parameters:
-                raise snpchimpDBException, "'%s' is not a valid parameters. Valid parameters are %s" %(k, self.__parameters)
+                raise snpchimpDBException("'%s' is not a valid parameters. Valid parameters are %s" %(k, self.__parameters))
             
             logger.info("Setting 'self.%s' to '%s' " %(k,v))
             setattr(self, k, v)
@@ -141,13 +145,13 @@ class SNPchiMp2():
         
         #check if animal is allowed
         if animal not in self.allowed_animals.keys():
-            raise snpchimpDBException, "Animal %s isn't in %s database" %(animal, self.db)
-            
+            raise snpchimpDBException("Animal %s isn't in %s database" %(animal, self.db))
+
         #Check assembly if exists
         assemblies = self.config.getAssembliesByAnimal(animal)
-        
+
         if assembly not in assemblies.keys():
-            raise snpchimpDBException, "Assembly '%s' isn't in '%s' database. Assemblies are %s" %(assembly, self.db, assemblies.keys())
+            raise snpchimpDBException("Assembly '%s' isn't in '%s' database. Assemblies are %s" %(assembly, self.db, assemblies.keys()))
             
         #derive the correct table
         prefix = self.allowed_animals[animal]
@@ -204,7 +208,7 @@ class SNPchiMp2():
             n_of_rows = curs.execute(sql, vep_input)
             
             if n_of_rows == 0:
-                raise snpchimpDBException, "%s return %s records" %(sql.replace("%s","'%s'") %vep_input, n_of_rows)
+                raise snpchimpDBException("%s return %s records" %(sql.replace("%s","'%s'") %vep_input, n_of_rows))
                 
             if header == None:
                 header = [col[0] for col in curs.description]
@@ -234,8 +238,8 @@ class SNPchiMp2():
         
         try:
             chrom, start, end = helper.parseLocation(location)
-        except Exception, message:
-            raise snpchimpDBException, message
+        except Exception as message:
+            raise snpchimpDBException(message)
         
         logger.debug("Got chrom:%s, start:%s, end:%s" %(chrom, start, end))
 
