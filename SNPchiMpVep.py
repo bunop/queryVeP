@@ -14,11 +14,13 @@ import os
 import io
 import getpass
 import logging
+import urllib.error
 import urllib.parse
 
 from flup.server.fcgi import WSGIServer
 
 # My modules
+from REST.EndPoints import RESTException
 import EnsEMBL.VEP
 import EnsEMBL.Sequence
 import EnsEMBL.Information
@@ -140,7 +142,14 @@ def myapp(environ, start_response):
     # Query ensembl via REST
     logger.info("Searching consequences using %s VEP endpoints" % (
         VEP.getRESTserver()))
-    VEP.Query()
+    try:
+        VEP.Query()
+    except (RESTException, urllib.error.URLError) as e:
+        message = (
+            "Ensembl VEP service is temporarily unavailable, "
+            "please try again later (%s)" % e)
+        logger.critical(message)
+        return [mytemplate.render(header=[], rows=[], message=message)]
 
     # defined the results header format
     header = [
